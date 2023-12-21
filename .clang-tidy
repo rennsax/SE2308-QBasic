@@ -1,0 +1,178 @@
+---
+# `>`: begin multiple-line string
+Checks: >
+  clang-diagnostic-*,
+  clang-analyzer-*,
+  cert-*,
+  bugprone-*,
+  cppcoreguidelines-*,
+  -bugprone-suspicious-include,
+  -cppcoreguidelines-owning-memory
+# -cppcoreguidelines-special-member-functions,
+
+User:            renbaijun
+WarningsAsErrors: ''
+HeaderFileExtensions:
+  - ''
+  - h
+  - hh
+  - hpp
+  - hxx
+ImplementationFileExtensions:
+  - c
+  - cc
+  - cpp
+  - cxx
+HeaderFilterRegex: ''
+AnalyzeTemporaryDtors: false
+FormatStyle:     none
+CheckOptions:
+  cppcoreguidelines-narrowing-conversions.IgnoreConversionFromTypes: ''
+  bugprone-argument-comment.CommentFloatLiterals: '0'
+  bugprone-argument-comment.CommentUserDefinedLiterals: '0'
+  cert-dcl51-cpp.Invert: 'false'
+  bugprone-sizeof-expression.WarnOnSizeOfThis: 'true'
+  bugprone-suspicious-missing-comma.MaxConcatenatedTokens: '5'
+  bugprone-signed-char-misuse.CharTypdefsToIgnore: ''
+  cert-dcl37-c.AggressiveDependentMemberLookup: 'false'
+  cppcoreguidelines-pro-type-member-init.UseAssignment: 'false'
+  cppcoreguidelines-narrowing-conversions.WarnOnEquivalentBitWidth: 'true'
+  cppcoreguidelines-owning-memory.LegacyResourceConsumers: '::free;::realloc;::freopen;::fclose'
+  cppcoreguidelines-narrowing-conversions.PedanticMode: 'false'
+  bugprone-dangling-handle.HandleClasses: 'std::basic_string_view;std::experimental::basic_string_view'
+  cppcoreguidelines-avoid-magic-numbers.IgnoredFloatingPointValues: '1.0;100.0;'
+  llvm-else-after-return.WarnOnUnfixable: 'false'
+  bugprone-exception-escape.IgnoredExceptions: ''
+  bugprone-signal-handler.AsyncSafeFunctionSet: POSIX
+  cppcoreguidelines-no-malloc.Reallocations: '::realloc'
+  bugprone-argument-comment.CommentIntegerLiterals: '0'
+  bugprone-argument-comment.CommentNullPtrs: '0'
+  cert-oop54-cpp.WarnOnlyIfThisHasSuspiciousField: 'false'
+  cppcoreguidelines-avoid-magic-numbers.IgnoreTypeAliases: 'false'
+  cppcoreguidelines-no-malloc.Deallocations: '::free'
+  bugprone-easily-swappable-parameters.ModelImplicitConversions: 'true'
+  cppcoreguidelines-avoid-magic-numbers.IgnoreUserDefinedLiterals: 'false'
+  bugprone-narrowing-conversions.WarnOnIntegerNarrowingConversion: 'true'
+  bugprone-argument-comment.CommentCharacterLiterals: '0'
+  cert-msc24-c.ReportMoreUnsafeFunctions: 'true'
+  cert-dcl16-c.NewSuffixes: 'L;LL;LU;LLU'
+  bugprone-reserved-identifier.Invert: 'false'
+  cppcoreguidelines-avoid-magic-numbers.IgnoredIntegerValues: '1;2;3;4;'
+  bugprone-string-constructor.LargeLengthThreshold: '8388608'
+  cert-str34-c.DiagnoseSignedUnsignedCharComparisons: 'false'
+  cert-msc54-cpp.AsyncSafeFunctionSet: POSIX
+  cert-oop57-cpp.MemCmpNames: ''
+  cppcoreguidelines-owning-memory.LegacyResourceProducers: '::malloc;::aligned_alloc;::realloc;::calloc;::fopen;::freopen;::tmpfile'
+  bugprone-argument-comment.StrictMode: '0'
+  cert-err09-cpp.CheckThrowTemporaries: 'true'
+  bugprone-string-constructor.WarnOnLargeLength: 'true'
+  cppcoreguidelines-no-malloc.Allocations: '::malloc;::calloc'
+  bugprone-unused-return-value.CheckedFunctions: '::std::async;::std::launder;::std::remove;::std::remove_if;::std::unique;::std::unique_ptr::release;::std::basic_string::empty;::std::vector::empty;::std::back_inserter;::std::distance;::std::find;::std::find_if;::std::inserter;::std::lower_bound;::std::make_pair;::std::map::count;::std::map::find;::std::map::lower_bound;::std::multimap::equal_range;::std::multimap::upper_bound;::std::set::count;::std::set::find;::std::setfill;::std::setprecision;::std::setw;::std::upper_bound;::std::vector::at;::bsearch;::ferror;::feof;::isalnum;::isalpha;::isblank;::iscntrl;::isdigit;::isgraph;::islower;::isprint;::ispunct;::isspace;::isupper;::iswalnum;::iswprint;::iswspace;::isxdigit;::memchr;::memcmp;::strcmp;::strcoll;::strncmp;::strpbrk;::strrchr;::strspn;::strstr;::wcscmp;::access;::bind;::connect;::difftime;::dlsym;::fnmatch;::getaddrinfo;::getopt;::htonl;::htons;::iconv_open;::inet_addr;::isascii;::isatty;::mmap;::newlocale;::openat;::pathconf;::pthread_equal;::pthread_getspecific;::pthread_mutex_trylock;::readdir;::readlink;::recvmsg;::regexec;::scandir;::semget;::setjmp;::shm_open;::shmget;::sigismember;::strcasecmp;::strsignal;::ttyname'
+  cert-msc32-c.DisallowedSeedTypes: 'time_t,std::time_t'
+  bugprone-too-small-loop-variable.MagnitudeBitsUpperLimit: '16'
+  bugprone-reserved-identifier.AggressiveDependentMemberLookup: 'false'
+  google-readability-namespace-comments.ShortNamespaceLines: '10'
+  bugprone-argument-comment.CommentStringLiterals: '0'
+  cppcoreguidelines-avoid-do-while.IgnoreMacros: 'false'
+  cppcoreguidelines-init-variables.MathHeader: '<math.h>'
+  bugprone-suspicious-missing-comma.RatioThreshold: '0.200000'
+  cppcoreguidelines-rvalue-reference-param-not-moved.AllowPartialMove: 'false'
+  bugprone-implicit-widening-of-multiplication-result.IncludeStyle: llvm
+  bugprone-sizeof-expression.WarnOnSizeOfConstant: 'true'
+  cppcoreguidelines-explicit-virtual-functions.FinalSpelling: final
+  cert-str34-c.CharTypdefsToIgnore: ''
+  bugprone-suspicious-include.HeaderFileExtensions: ';h;hh;hpp;hxx'
+  cert-err09-cpp.MaxSize: '-1'
+  cppcoreguidelines-macro-usage.AllowedRegexp: '^DEBUG_*'
+  bugprone-empty-catch.AllowEmptyCatchForExceptions: ''
+  cppcoreguidelines-explicit-virtual-functions.AllowOverrideAndFinal: 'false'
+  cppcoreguidelines-pro-type-member-init.IgnoreArrays: 'false'
+  bugprone-unchecked-optional-access.IgnoreSmartPointerDereference: 'false'
+  bugprone-argument-comment.CommentBoolLiterals: '0'
+  cppcoreguidelines-rvalue-reference-param-not-moved.IgnoreUnnamedParams: 'false'
+  bugprone-narrowing-conversions.WarnOnEquivalentBitWidth: 'true'
+  cppcoreguidelines-explicit-virtual-functions.IgnoreTemplateInstantiations: 'false'
+  bugprone-easily-swappable-parameters.MinimumLength: '2'
+  cert-dcl16-c.IgnoreMacros: 'true'
+  cert-oop57-cpp.MemSetNames: ''
+  bugprone-stringview-nullptr.IncludeStyle: llvm
+  bugprone-narrowing-conversions.PedanticMode: 'false'
+  cppcoreguidelines-explicit-virtual-functions.IgnoreDestructors: 'false'
+  bugprone-suspicious-enum-usage.StrictMode: 'false'
+  llvm-qualified-auto.AddConstToQualified: 'false'
+  bugprone-suspicious-include.ImplementationFileExtensions: 'c;cc;cpp;cxx'
+  bugprone-sizeof-expression.WarnOnSizeOfIntegerExpression: 'false'
+  cppcoreguidelines-avoid-magic-numbers.IgnorePowersOf2IntegerValues: 'false'
+  bugprone-unhandled-self-assignment.WarnOnlyIfThisHasSuspiciousField: 'true'
+  bugprone-dynamic-static-initializers.HeaderFileExtensions: ';h;hh;hpp;hxx'
+  google-readability-braces-around-statements.ShortStatementLines: '1'
+  bugprone-easily-swappable-parameters.SuppressParametersUsedTogether: 'true'
+  bugprone-narrowing-conversions.WarnWithinTemplateInstantiation: 'false'
+  cert-msc33-c.ReportMoreUnsafeFunctions: 'true'
+  cert-dcl59-cpp.HeaderFileExtensions: ';h;hh;hpp;hxx'
+  bugprone-narrowing-conversions.WarnOnFloatingPointNarrowingConversion: 'true'
+  bugprone-suspicious-missing-comma.SizeThreshold: '5'
+  bugprone-argument-comment.IgnoreSingleArgument: '0'
+  cppcoreguidelines-macro-usage.IgnoreCommandLineMacros: 'true'
+  bugprone-easily-swappable-parameters.QualifiersMix: 'false'
+  bugprone-narrowing-conversions.WarnOnIntegerToFloatingPointNarrowingConversion: 'true'
+  cppcoreguidelines-use-default-member-init.IgnoreMacros: 'true'
+  bugprone-easily-swappable-parameters.NamePrefixSuffixSilenceDissimilarityTreshold: '1'
+  cppcoreguidelines-use-default-member-init.UseAssignment: 'false'
+  bugprone-suspicious-string-compare.WarnOnLogicalNotComparison: 'false'
+  cert-dcl51-cpp.AggressiveDependentMemberLookup: 'false'
+  bugprone-implicit-widening-of-multiplication-result.UseCXXHeadersInCppSources: 'true'
+  bugprone-unsafe-functions.ReportMoreUnsafeFunctions: 'true'
+  cert-oop57-cpp.MemCpyNames: ''
+  cppcoreguidelines-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic: 'true'
+  bugprone-suspicious-string-compare.StringCompareLikeFunctions: ''
+  google-readability-function-size.StatementThreshold: '800'
+  bugprone-implicit-widening-of-multiplication-result.UseCXXStaticCastsInCppSources: 'true'
+  bugprone-suspicious-string-compare.WarnOnImplicitComparison: 'true'
+  cert-err33-c.CheckedFunctions: '::aligned_alloc;::asctime_s;::at_quick_exit;::atexit;::bsearch;::bsearch_s;::btowc;::c16rtomb;::c32rtomb;::calloc;::clock;::cnd_broadcast;::cnd_init;::cnd_signal;::cnd_timedwait;::cnd_wait;::ctime_s;::fclose;::fflush;::fgetc;::fgetpos;::fgets;::fgetwc;::fopen;::fopen_s;::fprintf;::fprintf_s;::fputc;::fputs;::fputwc;::fputws;::fread;::freopen;::freopen_s;::fscanf;::fscanf_s;::fseek;::fsetpos;::ftell;::fwprintf;::fwprintf_s;::fwrite;::fwscanf;::fwscanf_s;::getc;::getchar;::getenv;::getenv_s;::gets_s;::getwc;::getwchar;::gmtime;::gmtime_s;::localtime;::localtime_s;::malloc;::mbrtoc16;::mbrtoc32;::mbsrtowcs;::mbsrtowcs_s;::mbstowcs;::mbstowcs_s;::memchr;::mktime;::mtx_init;::mtx_lock;::mtx_timedlock;::mtx_trylock;::mtx_unlock;::printf_s;::putc;::putwc;::raise;::realloc;::remove;::rename;::scanf;::scanf_s;::setlocale;::setvbuf;::signal;::snprintf;::snprintf_s;::sprintf;::sprintf_s;::sscanf;::sscanf_s;::strchr;::strerror_s;::strftime;::strpbrk;::strrchr;::strstr;::strtod;::strtof;::strtoimax;::strtok;::strtok_s;::strtol;::strtold;::strtoll;::strtoul;::strtoull;::strtoumax;::strxfrm;::swprintf;::swprintf_s;::swscanf;::swscanf_s;::thrd_create;::thrd_detach;::thrd_join;::thrd_sleep;::time;::timespec_get;::tmpfile;::tmpfile_s;::tmpnam;::tmpnam_s;::tss_create;::tss_get;::tss_set;::ungetc;::ungetwc;::vfprintf;::vfprintf_s;::vfscanf;::vfscanf_s;::vfwprintf;::vfwprintf_s;::vfwscanf;::vfwscanf_s;::vprintf_s;::vscanf;::vscanf_s;::vsnprintf;::vsnprintf_s;::vsprintf;::vsprintf_s;::vsscanf;::vsscanf_s;::vswprintf;::vswprintf_s;::vswscanf;::vswscanf_s;::vwprintf_s;::vwscanf;::vwscanf_s;::wcrtomb;::wcschr;::wcsftime;::wcspbrk;::wcsrchr;::wcsrtombs;::wcsrtombs_s;::wcsstr;::wcstod;::wcstof;::wcstoimax;::wcstok;::wcstok_s;::wcstol;::wcstold;::wcstoll;::wcstombs;::wcstombs_s;::wcstoul;::wcstoull;::wcstoumax;::wcsxfrm;::wctob;::wctrans;::wctype;::wmemchr;::wprintf_s;::wscanf;::wscanf_s;'
+  cppcoreguidelines-narrowing-conversions.WarnOnFloatingPointNarrowingConversion: 'true'
+  bugprone-unused-return-value.CheckedReturnTypes: '::std::error_code;::std::error_condition;::std::errc;::std::expected;::boost::system::error_code'
+  bugprone-assert-side-effect.IgnoredFunctions: __builtin_expect
+  bugprone-string-constructor.StringNames: '::std::basic_string;::std::basic_string_view'
+  cert-sig30-c.AsyncSafeFunctionSet: POSIX
+  bugprone-exception-escape.FunctionsThatShouldNotThrow: ''
+  bugprone-misplaced-widening-cast.CheckImplicitCasts: 'false'
+  cert-err61-cpp.WarnOnLargeObjects: 'false'
+  cppcoreguidelines-narrowing-conversions.WarnOnIntegerToFloatingPointNarrowingConversion: 'true'
+  cert-msc51-cpp.DisallowedSeedTypes: 'time_t,std::time_t'
+  cert-err09-cpp.WarnOnLargeObjects: 'false'
+  bugprone-not-null-terminated-result.WantToUseSafeFunctions: 'true'
+  cppcoreguidelines-avoid-magic-numbers.IgnoreBitFieldsWidths: 'true'
+  bugprone-non-zero-enum-to-bool-conversion.EnumIgnoreList: ''
+  bugprone-narrowing-conversions.IgnoreConversionFromTypes: ''
+  bugprone-assert-side-effect.AssertMacros: assert,NSAssert,NSCAssert
+  cert-err33-c.CheckedReturnTypes: '::std::error_code;::std::error_condition;::std::errc;::std::expected;::boost::system::error_code'
+  bugprone-easily-swappable-parameters.IgnoredParameterTypeSuffixes: 'bool;Bool;_Bool;it;It;iterator;Iterator;inputit;InputIt;forwardit;ForwardIt;bidirit;BidirIt;constiterator;const_iterator;Const_Iterator;Constiterator;ConstIterator;RandomIt;randomit;random_iterator;ReverseIt;reverse_iterator;reverse_const_iterator;ConstReverseIterator;Const_Reverse_Iterator;const_reverse_iterator;Constreverseiterator;constreverseiterator'
+  cppcoreguidelines-non-private-member-variables-in-classes.IgnorePublicMemberVariables: 'false'
+  cppcoreguidelines-avoid-magic-numbers.IgnoreAllFloatingPointValues: 'false'
+  cppcoreguidelines-pro-bounds-constant-array-index.GslHeader: ''
+  cppcoreguidelines-init-variables.IncludeStyle: llvm
+  cppcoreguidelines-rvalue-reference-param-not-moved.IgnoreNonDeducedTemplateTypes: 'false'
+  bugprone-sizeof-expression.WarnOnSizeOfCompareToConstant: 'true'
+  cert-err61-cpp.CheckThrowTemporaries: 'true'
+  bugprone-empty-catch.IgnoreCatchWithKeywords: '@TODO;@FIXME'
+  cppcoreguidelines-narrowing-conversions.WarnWithinTemplateInstantiation: 'false'
+  google-readability-namespace-comments.SpacesBeforeComments: '2'
+  bugprone-assert-side-effect.CheckFunctionCalls: 'false'
+  cert-dcl37-c.AllowedIdentifiers: ''
+  bugprone-easily-swappable-parameters.IgnoredParameterNames: '"";iterator;Iterator;begin;Begin;end;End;first;First;last;Last;lhs;LHS;rhs;RHS'
+  bugprone-reserved-identifier.AllowedIdentifiers: ''
+  cppcoreguidelines-pro-bounds-constant-array-index.IncludeStyle: llvm
+  cert-dcl51-cpp.AllowedIdentifiers: ''
+  bugprone-sizeof-expression.WarnOnSizeOfPointerToAggregate: 'true'
+  cppcoreguidelines-prefer-member-initializer.UseAssignment: 'false'
+  cert-err61-cpp.MaxSize: '-1'
+  bugprone-signed-char-misuse.DiagnoseSignedUnsignedCharComparisons: 'true'
+  cppcoreguidelines-explicit-virtual-functions.OverrideSpelling: override
+  cppcoreguidelines-narrowing-conversions.WarnOnIntegerNarrowingConversion: 'true'
+  llvm-else-after-return.WarnOnConditionVariables: 'false'
+  cert-dcl37-c.Invert: 'false'
+  cppcoreguidelines-macro-usage.CheckCapsOnly: 'false'
+SystemHeaders:   false
+...
+

@@ -18,3 +18,7 @@ target_link_libraries(qbasic-frontend
     Qt6::Widgets
     Qt6::Gui
 )
+
+set_target_properties(qbasic-frontend PROPERTIES
+    AUTOUIC_SEARCH_PATHS ${QBASIC_FRONTEND_INCLUDE_DIR}/ui
+)

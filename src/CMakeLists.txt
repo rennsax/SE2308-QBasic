@@ -1,12 +1,14 @@
-aux_source_directory(frontend qbasic_frontend_src)
+aux_source_directory(frontend QBASIC_FRONTEND_SRC)
+set(QBASIC_FRONTEND_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include/frontend)
 
 qt_add_library(qbasic-frontend STATIC
-    ${qbasic_frontend_src}
+    ${QBASIC_FRONTEND_SRC}
+    ${QBASIC_FRONTEND_INCLUDE_DIR}/qbasic.qrc
 )
 
 target_include_directories(qbasic-frontend
     PUBLIC
-    ${PROJECT_SOURCE_DIR}/include/frontend
+    ${QBASIC_FRONTEND_INCLUDE_DIR}
     INTERFACE
     ${PROJECT_SOURCE_DIR}/include
 )

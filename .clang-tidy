@@ -10,7 +10,6 @@ Checks: >
   -cppcoreguidelines-owning-memory
 # -cppcoreguidelines-special-member-functions,
 
-User:            renbaijun
 WarningsAsErrors: ''
 HeaderFileExtensions:
   - ''

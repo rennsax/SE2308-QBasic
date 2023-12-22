@@ -1,3 +1,7 @@
+# Check the doc: https://doc.qt.io/Qt-6/qt-standard-project-setup.html#description
+qt_standard_project_setup()
+set(CMAKE_AUTORCC ON)
+
 aux_source_directory(frontend QBASIC_FRONTEND_SRC)
 set(QBASIC_FRONTEND_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include/frontend)
 

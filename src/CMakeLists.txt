@@ -1,4 +1,4 @@
-add_subdirectory(backend/parser)
+add_subdirectory(backend)
 
 # Qt6 should be installed appropriately by the user.
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets)

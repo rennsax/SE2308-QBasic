@@ -24,8 +24,6 @@ set(ANTLR_EXECUTABLE ${antlr4_SOURCE_DIR}/${antlr_JAR_NAME})
 
 find_package(ANTLR REQUIRED)
 
-set(BASIC_BACKEND_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include/backend)
-
 antlr_target(BasicParser
     Basic.g4
     PARSER LEXER # Mixed lexer and parser
@@ -41,11 +39,9 @@ add_library(basic-parser STATIC
 )
 
 target_include_directories(basic-parser
-    PRIVATE
+    PUBLIC
     ${ANTLR_BasicParser_OUTPUT_DIR}
     ${ANTLR4_INCLUDE_DIRS}
-    PUBLIC
-    ${BASIC_BACKEND_INCLUDE_DIR}/parser
 )
 
 target_link_libraries(basic-parser

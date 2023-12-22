@@ -1,5 +1,7 @@
 add_subdirectory(backend/parser)
 
+# Qt6 should be installed appropriately by the user.
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
 # Check the doc: https://doc.qt.io/Qt-6/qt-standard-project-setup.html#description
 qt_standard_project_setup()
 set(CMAKE_AUTORCC ON)

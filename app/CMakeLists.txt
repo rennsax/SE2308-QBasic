@@ -1,8 +1,6 @@
-# TODO check command availability
-
 set(APP_TARGET Qbasic-Interpreter)
 
-qt_add_executable(${APP_TARGET}
+add_executable(${APP_TARGET}
     qbasic-app.cpp
 )
 

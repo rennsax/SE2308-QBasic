@@ -1,12 +1,36 @@
-if(NOT ${ANTLR_FOUND})
-    message(FATAL_ERROR "Cannot find antlr!")
-endif()
+# Configure ANTLR
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/lib/antlr/cmake ${CMAKE_MODULE_PATH})
+
+if(MSVC)
+    # if true ANTLR4 C++ runtime library should be compiled with /MT flag
+    # otherwise will be compiled with /MD flag.
+    set(ANTLR4_WITH_STATIC_CRT OFF)
+endif(MSVC)
+
+include(FetchContent)
+set(antlr_JAR_NAME "antlr-4.13.1-complete.jar")
+FetchContent_Declare(
+    antlr4
+    URL "https://www.antlr.org/download/${antlr_JAR_NAME}"
+    DOWNLOAD_NO_EXTRACT TRUE
+    URL_MD5 78af96af276609af0bfb3f1e2bfaef89
+)
+FetchContent_MakeAvailable(antlr4)
+
+include(ExternalAntlr4Cpp)
+include_directories(${ANTLR4_INCLUDE_DIRS})
+
+set(ANTLR_EXECUTABLE ${antlr4_SOURCE_DIR}/${antlr_JAR_NAME})
+# End configure ANTLR
+
+find_package(ANTLR REQUIRED)
 
 set(BASIC_BACKEND_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include/backend)
 
 antlr_target(BasicParser
     Basic.g4
     PARSER LEXER # Mixed lexer and parser
+    VISITOR # Also generate a visitor interface
     PACKAGE antlr_basic
 )
 

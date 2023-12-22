@@ -52,24 +52,25 @@ stm:
 	| end_stm;
 
 empty_stm: NL;
-let_stm: LET ID EQUAL expr;
-print_stm: PRINT expr;
-input_stm: INPUT ID;
-goto_stm: GOTO INT;
+
+let_stm: LET ID EQUAL expr # LetStm;
+print_stm: PRINT expr # PrintStm;
+input_stm: INPUT ID # InputStm;
+goto_stm: GOTO INT # GotoStm;
 cmp_op: EQUAL | LT | GT;
-if_stm: IF expr cmp_op expr THEN INT;
-end_stm: END;
+if_stm: IF expr cmp_op expr THEN INT # IfStm;
+end_stm: END # EndStm;
 
 expr:
-	MINUS expr
-	| <assoc = right> expr POWER expr
-	| expr MULT expr
-	| expr DIV expr
-	| expr MOD expr
-	| expr PLUS expr
-	| expr MINUS expr
-	| LPAREN expr RPAREN
-	| INT
-	| ID;
+	MINUS expr							# NegExpr
+	| <assoc = right> expr POWER expr	# PowerExpr
+	| expr MULT expr					# MultExpr
+	| expr DIV expr						# DivExpr
+	| expr MOD expr						# ModExpr
+	| expr PLUS expr					# PlusExpr
+	| expr MINUS expr					# MinusExpr
+	| LPAREN expr RPAREN				# ParenExpr
+	| INT								# IntExpr
+	| ID								# VarExpr;
 
 empty_line: NL;

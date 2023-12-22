@@ -1,4 +1,4 @@
-# Configure ANTLR
+# Begin: configure ANTLR
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/lib/antlr/cmake ${CMAKE_MODULE_PATH})
 
 if(MSVC)
@@ -18,10 +18,9 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(antlr4)
 
 include(ExternalAntlr4Cpp)
-include_directories(${ANTLR4_INCLUDE_DIRS})
 
 set(ANTLR_EXECUTABLE ${antlr4_SOURCE_DIR}/${antlr_JAR_NAME})
-# End configure ANTLR
+# ENd: configure ANTLR
 
 find_package(ANTLR REQUIRED)
 
@@ -44,6 +43,7 @@ add_library(basic-parser STATIC
 target_include_directories(basic-parser
     PRIVATE
     ${ANTLR_BasicParser_OUTPUT_DIR}
+    ${ANTLR4_INCLUDE_DIRS}
     PUBLIC
     ${BASIC_BACKEND_INCLUDE_DIR}/parser
 )

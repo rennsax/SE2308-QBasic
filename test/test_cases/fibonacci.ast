@@ -1,0 +1,55 @@
+(100REM ... Fibonacci\n110LETmax=10000\n120LETn1=0\n130LETn2=1\n140IFn1>maxTHEN190\n145PRINTn1\n150LETn3=n1+n2\n160LETn1=n2\n170LETn2=n3\n180GOTO140\n190END\n 
+        (100REM ... Fibonacci\n 
+            (100 100) REM ... Fibonacci\n) 
+        (110LETmax=10000\n 
+            (110 110) 
+            (LETmax=10000 
+                (LETmax=10000 LET max = 
+                    (10000 10000))) \n) 
+        (120LETn1=0\n 
+            (120 120) 
+            (LETn1=0 
+                (LETn1=0 LET n1 = 
+                    (0 0))) \n) 
+        (130LETn2=1\n 
+            (130 130) 
+            (LETn2=1 
+                (LETn2=1 LET n2 = 
+                    (1 1))) \n) 
+        (140IFn1>maxTHEN190\n 
+            (140 140) 
+            (IFn1>maxTHEN190 
+                (IFn1>maxTHEN190 IF 
+                    (n1 n1) 
+                    (> >) 
+                    (max max) THEN 190)) \n) 
+        (145PRINTn1\n 
+            (145 145) 
+            (PRINTn1 
+                (PRINTn1 PRINT 
+                    (n1 n1))) \n) 
+        (150LETn3=n1+n2\n 
+            (150 150) 
+            (LETn3=n1+n2 
+                (LETn3=n1+n2 LET n3 = 
+                    (n1+n2 
+                        (n1 n1) + 
+                        (n2 n2)))) \n) 
+        (160LETn1=n2\n 
+            (160 160) 
+            (LETn1=n2 
+                (LETn1=n2 LET n1 = 
+                    (n2 n2))) \n) 
+        (170LETn2=n3\n 
+            (170 170) 
+            (LETn2=n3 
+                (LETn2=n3 LET n2 = 
+                    (n3 n3))) \n) 
+        (180GOTO140\n 
+            (180 180) 
+            (GOTO140 
+                (GOTO140 GOTO 140)) \n) 
+        (190END\n 
+            (190 190) 
+            (END 
+                (END END)) \n))

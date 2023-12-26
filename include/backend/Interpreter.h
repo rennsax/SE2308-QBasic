@@ -39,6 +39,8 @@ public:
      */
     void interpret();
 
+    std::string show_ast() const;
+
 private:
     /// The Basic code to be interpreted.
     std::shared_ptr<Fragment> frag{};

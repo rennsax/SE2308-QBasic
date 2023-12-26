@@ -213,3 +213,21 @@ TEST_CASE("compounded") {
 
     CHECK(out.str() == ref_ss.str());
 }
+
+TEST_CASE("show AST") {
+    std::ifstream test_ifs{"test_cases/fibonacci.in"};
+    auto frag = std::make_shared<Fragment>(Fragment::read_stream(test_ifs));
+    REQUIRE(frag->size() == 11);
+
+    std::ostringstream out{};
+    std::ostringstream err{};
+    std::istringstream in{};
+    Interpreter inter{frag, out, err, in};
+
+    std::stringstream ast_ss{};
+    std::ifstream ast_ifs{"test_cases/fibonacci.ast"};
+    REQUIRE(ast_ifs.is_open());
+    ast_ss << ast_ifs.rdbuf();
+
+    CHECK(inter.show_ast() == ast_ss.str());
+}

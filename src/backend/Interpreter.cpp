@@ -343,4 +343,19 @@ void Interpreter::interpret() {
     visitor.visit(tree);
 }
 
+std::string Interpreter::show_ast() const {
+    auto code_stream = frag->get_frag_stream();
+
+    // Lexer, get tokens
+    ANTLRInputStream input(code_stream);
+    BasicLexer lexer(&input);
+    CommonTokenStream tokens(&lexer);
+
+    // Parser, get AST
+    BasicParser parser(&tokens);
+    tree::ParseTree *tree = parser.prog();
+
+    return tree->toStringTree(true);
+}
+
 } // namespace basic

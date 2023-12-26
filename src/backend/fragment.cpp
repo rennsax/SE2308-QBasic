@@ -8,6 +8,14 @@ Fragment::Fragment() {
 Fragment::Fragment(std::string_view delimiter) : delimiter_(delimiter) {
 }
 
+Fragment Fragment::read_stream(std::istream &is) {
+    Fragment frag{"\n"};
+    for (std::string line{}; std::getline(is, line);) {
+        frag.lines_.push_back(line);
+    }
+    return frag;
+}
+
 Fragment::Fragment(const Fragment &other) noexcept
     : lines_(other.lines_), delimiter_(other.delimiter_) {
 }

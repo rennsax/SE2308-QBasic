@@ -26,6 +26,8 @@ public:
      */
     explicit Fragment(std::string_view delimiter);
 
+    static Fragment read_stream(std::istream &is);
+
     Fragment(const Fragment &other) noexcept;
     Fragment(Fragment &&other) noexcept;
 

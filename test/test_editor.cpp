@@ -26,3 +26,15 @@ TEST_CASE("fragment manipulate") {
     CHECK(frag.insert(200, "") == false);
     CHECK(frag.append("") == false);
 }
+
+TEST_CASE("read from file") {
+    std::ifstream ifs{"test_cases/fibonacci.in"};
+    basic::Fragment frag = basic::Fragment::read_stream(ifs);
+
+    CHECK(frag.size() == 11);
+    CHECK(frag.get_line(145) == "PRINT n1");
+
+    frag.insert(195, "PRINT n2");
+
+    CHECK(frag.size() == 12);
+}

@@ -193,3 +193,23 @@ TEST_CASE("error detection") {
         CHECK(err.str() == "runtime error: invalid line number: 20\n");
     }
 }
+
+TEST_CASE("compounded") {
+    std::ifstream test_ifs{"test_cases/fibonacci.in"};
+    auto frag = std::make_shared<Fragment>(Fragment::read_stream(test_ifs));
+    REQUIRE(frag->size() == 11);
+
+    std::ostringstream out{};
+    std::ostringstream err{};
+    std::istringstream in{};
+    Interpreter inter{frag, out, err, in};
+
+    inter.interpret();
+
+    std::stringstream ref_ss{};
+    std::ifstream ref_ifs{"test_cases/fibonacci.ref"};
+    REQUIRE(ref_ifs.is_open());
+    ref_ss << ref_ifs.rdbuf();
+
+    CHECK(out.str() == ref_ss.str());
+}

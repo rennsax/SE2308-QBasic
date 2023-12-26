@@ -11,6 +11,23 @@ Fragment::Fragment(std::string_view delimiter) : delimiter_(delimiter) {
 Fragment Fragment::read_stream(std::istream &is) {
     Fragment frag{"\n"};
     for (std::string line{}; std::getline(is, line);) {
+        if (line.empty()) {
+            // Escape empty lines.
+            continue;
+        }
+        LSize line_num{};
+        std::string content{};
+        std::istringstream ss{line};
+        ss >> line_num;
+        ws(ss);
+        std::getline(ss, content);
+        if (!ss) {
+            throw std::runtime_error{
+                "cannot extract line number and line content"};
+        }
+        if (!frag.insert(line_num, content)) {
+            throw std::runtime_error{"duplicated line number found!"};
+        }
     }
     return frag;
 }

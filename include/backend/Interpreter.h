@@ -32,6 +32,11 @@ public:
     Interpreter &operator=(const Interpreter &other) = delete;
     Interpreter &operator=(Interpreter &&other) = delete;
 
+    /**
+     * @brief Trigger the interpretation of the stored fragment.
+     *
+     * Output and error informations are written to the corresponding streams.
+     */
     void interpret();
 
 private:

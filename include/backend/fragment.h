@@ -26,6 +26,12 @@ public:
      */
     explicit Fragment(std::string_view delimiter);
 
+    /**
+     * @b Reads a Fragment object from the given input stream.
+     *
+     * @param is The input stream to read from.
+     * @return The Fragment object read from the input stream.
+     */
     static Fragment read_stream(std::istream &is);
 
     Fragment(const Fragment &other) noexcept;
@@ -37,7 +43,9 @@ public:
     ~Fragment() = default;
 
     /**
-     * @brief Inserts a line at the specified position. Refuse to insert if:
+     * @brief Inserts a line at the specified position.
+     *
+     * Refuse to insert if:
      * 1. there is already a line at pos; 2. the line is empty; 3. pos == 1
      *
      * @param pos The position at which the line should be inserted.
@@ -54,7 +62,7 @@ public:
      * The new line number is: (last_line_num / 10 + 1) * 10
      *
      * @param line The line to append.
-     * @return False iff line is empty.
+     * @return False iff the given line is empty.
      */
     bool append(const std::string &line) noexcept;
 

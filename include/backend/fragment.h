@@ -2,7 +2,7 @@
 #define BASIC_FRAGMENT_H
 
 #include "common.h"
-#include <list>
+#include <map>
 #include <optional>
 #include <sstream>
 #include <string>
@@ -37,16 +37,26 @@ public:
     ~Fragment() = default;
 
     /**
-     * Inserts a line at the specified position.
+     * @brief Inserts a line at the specified position. Refuse to insert if
+     * there is already a line at @c pos or the line is empty.
      *
+     * @param pos The position at which the line should be inserted.
      * @param line The line to be inserted.
      * @note Insertion respects the raw content of line, i.e. it will never
      * strip the tailing newline character (\n).
-     * @param pos The position at which the line should be inserted.
      * @return True if the line was successfully inserted, false otherwise.
      */
-    bool insert(const std::string &line, LSize pos) noexcept;
-    bool insert(const std::string &line) noexcept;
+    bool insert(LSize pos, const std::string &line) noexcept;
+
+    /**
+     * @brief Appends a line to the fragment.
+     *
+     * The new line number is: (last_line_num / 10 + 1) * 10
+     *
+     * @param line The line to append.
+     * @return False iff line is empty.
+     */
+    bool append(const std::string &line) noexcept;
 
     /**
      * @brief Removes a line at the specified position.
@@ -86,7 +96,7 @@ public:
     }
 
 private:
-    using LineContainer = std::list<std::string>;
+    using LineContainer = std::map<LSize, std::string>;
     using LineIter = LineContainer::iterator;
     using LineConstIter = LineContainer::const_iterator;
 
@@ -97,6 +107,8 @@ private:
     std::string delimiter_{"\n"};
 
     LineConstIter get_iter_(LSize pos) const;
+    bool is_valid_iter_(LineConstIter iter) const noexcept;
+    bool is_valid_line_(LSize pos) const noexcept;
 };
 
 } // namespace basic

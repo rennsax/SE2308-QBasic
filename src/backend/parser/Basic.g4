@@ -27,7 +27,7 @@ EQUAL: '=';
 LPAREN: '(';
 RPAREN: ')';
 
-// COMMENT: REM .*? NL -> skip;
+COMMENT: REM .*? NL;
 
 WS: [ \t\r]+ -> skip;
 NL: '\n';
@@ -41,7 +41,7 @@ prog: stm0*;
 /** Greedy: try to match a statement */
 stm0:
 	line_num stm NL // "\n" or "\r\n" is necessary
-	| line_num REM .*? NL; // Match a comment.
+	| line_num COMMENT; // Match a comment.
 
 line_num: INT # LineNum;
 

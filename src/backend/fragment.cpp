@@ -27,6 +27,9 @@ bool Fragment::insert(LSize pos, const std::string &line) noexcept {
     if (line.empty()) {
         return false;
     }
+    if (pos == 0) {
+        return false;
+    }
     if (is_valid_line_(pos)) {
         return false;
     }

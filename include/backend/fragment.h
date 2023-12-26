@@ -37,8 +37,8 @@ public:
     ~Fragment() = default;
 
     /**
-     * @brief Inserts a line at the specified position. Refuse to insert if
-     * there is already a line at @c pos or the line is empty.
+     * @brief Inserts a line at the specified position. Refuse to insert if:
+     * 1. there is already a line at pos; 2. the line is empty; 3. pos == 1
      *
      * @param pos The position at which the line should be inserted.
      * @param line The line to be inserted.

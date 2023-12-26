@@ -142,6 +142,22 @@ public:
         return {};
     }
 
+    std::any visitInputStm(BasicParser::InputStmContext *ctx) override {
+        auto id = parseId(ctx->ID());
+
+        VarType val{};
+        out << "? ";
+        in >> val;
+        if (!in) {
+            auto wrong_token = ctx->INPUT()->getSymbol();
+            report_error(wrong_token, "Input error!");
+            var_env[id] = ExprFallback::value;
+        } else {
+            var_env[id] = val;
+        }
+        return {};
+    }
+
     std::any visitLetStm(BasicParser::LetStmContext *ctx) override {
         auto val = parseExpr(ctx->expr());
         auto id = parseId(ctx->ID());

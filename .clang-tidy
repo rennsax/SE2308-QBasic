@@ -7,7 +7,8 @@ Checks: >
   bugprone-*,
   cppcoreguidelines-*,
   -bugprone-suspicious-include,
-  -cppcoreguidelines-owning-memory
+  -cppcoreguidelines-owning-memory,
+  -bugprone-easily-swappable-parameters
 # -cppcoreguidelines-special-member-functions,
 
 WarningsAsErrors: ''

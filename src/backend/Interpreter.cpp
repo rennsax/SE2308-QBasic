@@ -41,62 +41,64 @@ public:
     InterpretVisitor &operator=(const InterpretVisitor &other) = delete;
     InterpretVisitor &operator=(InterpretVisitor &&other) = delete;
 
+    /**
+     * @brief
+     *
+     * @param ctx
+     * @return std::any LSize
+     */
+    std::any visitLineNum(BasicParser::LineNumContext *ctx) override {
+        return static_cast<LSize>(std::stoi(ctx->INT()->getText()));
+    }
+
     std::any visitProg(BasicParser::ProgContext *ctx) override {
         std::vector<BasicParser::Stm0Context *> stm0_list = ctx->stm0();
-        std::vector<BasicParser::StmContext *> stm_list{};
+        if (stm0_list.empty()) {
+            return {};
+        }
 
-        transform(begin(stm0_list), end(stm0_list), back_inserter(stm_list),
-                  [](BasicParser::Stm0Context *stm0) {
-                      return stm0->stm();
-                  });
+        transform(
+            begin(stm0_list), end(stm0_list), inserter(stm_list, end(stm_list)),
+            [this](BasicParser::Stm0Context *stm0)
+                -> decltype(stm_list)::value_type {
+                LSize line_num = std::any_cast<LSize>(visit(stm0->line_num()));
+                return {line_num, stm0->stm()};
+            });
+
         assert(stm_list.size() == stm0_list.size());
 
-        for (LSize l = 0; l < stm_list.size();) {
-            auto stm = stm_list[l];
-            if (stm == nullptr) {
-                // Empty line or comment
-                ++l;
-                continue;
+        auto get_next_line = [this](LSize cur_line) -> LSize {
+            auto nl_it = stm_list.upper_bound(cur_line);
+            if (nl_it == end(stm_list)) {
+                // The prog reaches its end.
+                return 0;
+            } else {
+                return nl_it->first;
             }
-            if (stm->end_stm()) {
-                // Program ends
+        };
+
+        // Interpret
+        for (LSize cur_line = begin(stm_list)->first; cur_line != 0;) {
+
+            if (auto it = stm_list.find(cur_line); it == end(stm_list)) {
+                err << "runtime error: invalid line number: " << cur_line
+                    << '\n';
+                has_error = true;
                 break;
             }
-            if (stm->goto_stm()) {
-                auto goto_target =
-                    std::any_cast<tree::TerminalNode *>(visit(stm));
-                auto next_line = std::stoi(goto_target->getText());
-                if (next_line < 0 || next_line >= stm_list.size()) {
-                    auto wrong_token = goto_target->getSymbol();
-                    std::stringstream err_ss{};
-                    err_ss << "Invalid line number: " << next_line << '\n';
-                    report_error(wrong_token, err_ss.str());
-                    ++l;
-                } else {
-                    l = next_line;
-                }
-            } else if (stm->if_stm()) {
-                auto cjump_optional_target = visit(stm);
-                if (cjump_optional_target.has_value()) {
-                    auto cjump_target = std::any_cast<tree::TerminalNode *>(
-                        cjump_optional_target);
-                    auto next_line = std::stoi(cjump_target->getText());
-                    if (next_line < 0 || next_line >= stm_list.size()) {
-                        auto wrong_token = cjump_target->getSymbol();
-                        std::stringstream err_ss{};
-                        err_ss << "Invalid line number: " << next_line << '\n';
-                        report_error(wrong_token, err_ss.str());
-                        ++l;
-                        continue;
-                    }
 
-                    l = next_line;
-                } else {
-                    ++l;
-                }
+            auto stm_to_visit = stm_list.at(cur_line);
+            if (stm_to_visit == nullptr) {
+                // The statement is a comment.
+                cur_line = get_next_line(cur_line);
+                continue;
+            }
+
+            auto maybe_nl = visit(stm_to_visit);
+            if (maybe_nl.has_value()) {
+                cur_line = std::any_cast<LSize>(maybe_nl);
             } else {
-                visit(stm);
-                ++l;
+                cur_line = get_next_line(cur_line);
             }
         }
 
@@ -104,21 +106,17 @@ public:
     }
 
     /**
-     * @brief
-     *
-     * @param ctx
-     * @return std::any The line number to jump to.
+     * The following three: END, GOTO, IF, may change control flow.
      */
-    std::any visitGotoStm(BasicParser::GotoStmContext *ctx) override {
-        return ctx->INT();
+
+    std::any visitEndStm(BasicParser::EndStmContext *ctx) override {
+        return static_cast<LSize>(0);
     }
 
-    /**
-     * @brief
-     *
-     * @param ctx
-     * @return std::any Empty if not jump, otherwise the target line number.
-     */
+    std::any visitGotoStm(BasicParser::GotoStmContext *ctx) override {
+        return static_cast<LSize>(std::stoi(ctx->INT()->getText()));
+    }
+
     std::any visitIfStm(BasicParser::IfStmContext *ctx) override {
         auto left_expr = parseExpr(ctx->expr(0));
         auto right_expr = parseExpr(ctx->expr(1));
@@ -132,7 +130,7 @@ public:
         }
 
         if (cond) {
-            return ctx->INT();
+            return static_cast<LSize>(std::stoi(ctx->INT()->getText()));
         }
 
         return {};
@@ -179,7 +177,7 @@ public:
         if (exponent < 0) {
             auto wrong_token = ctx->expr(1)->getStart();
             std::stringstream err_ss{};
-            err_ss << "Unsupported negative exponent: " << exponent << '\n';
+            err_ss << "Unsupported negative exponent: " << exponent;
             report_error(wrong_token, err_ss.str());
             return ExprFallback::value;
         }
@@ -194,8 +192,7 @@ public:
         if (divisor == 0) {
             auto wrong_token = ctx->expr(1)->getStart();
             std::stringstream err_ss{};
-            err_ss << "Division by zero: " << dividend << " / " << divisor
-                   << '\n';
+            err_ss << "Division by zero: " << dividend << " / " << divisor;
             report_error(wrong_token, err_ss.str());
             return ExprFallback::value;
         }
@@ -227,7 +224,7 @@ public:
         if (auto it = var_env.find(var_name); it == var_env.end()) {
             auto wrong_token = ctx->ID()->getSymbol();
             std::stringstream err_ss{};
-            err_ss << "Undefined variable: " << var_name << '\n';
+            err_ss << "Undefined variable: " << var_name;
             report_error(wrong_token, err_ss.str());
             return ExprFallback::value;
         } else {
@@ -247,8 +244,7 @@ public:
         if (modulus == 0) {
             auto wrong_token = ctx->expr(1)->getStart();
             std::stringstream err_ss{};
-            err_ss << "Modulus by zero: " << dividend << " MOD " << modulus
-                   << '\n';
+            err_ss << "Modulus by zero: " << dividend << " MOD " << modulus;
             report_error(wrong_token, err_ss.str());
             return ExprFallback::value;
         }
@@ -276,6 +272,8 @@ private:
     bool has_error;
 
     std::unordered_map<std::string, VarType> var_env;
+
+    std::map<LSize, BasicParser::StmContext *> stm_list{};
 
     /**
      * @brief Just a wrapper for #visit, which convert the result to #ValType.
@@ -311,7 +309,7 @@ private:
 
     void report_error(Token *wrong_token, const std::string &msg) {
         log_error(err, wrong_token->getLine(),
-                  wrong_token->getCharPositionInLine(), msg);
+                  wrong_token->getCharPositionInLine() + 1, msg);
         has_error = true;
     }
 };

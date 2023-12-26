@@ -35,14 +35,15 @@ NL: '\n';
 /** parser */
 main: prog EOF;
 
-/** stm0: statement with a new line */
+/** stm0: statement with the line number and a new line */
 prog: stm0*;
 
 /** Greedy: try to match a statement */
 stm0:
-	stm NL // "\n" or "\r\n" is necessary
-	| REM .*? NL // Match a comment.
-	| NL; // Match an empty line.
+	line_num stm NL // "\n" or "\r\n" is necessary
+	| line_num REM .*? NL; // Match a comment.
+
+line_num: INT # LineNum;
 
 stm:
 	let_stm

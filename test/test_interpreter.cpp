@@ -14,10 +14,10 @@ TEST_CASE("expression") {
     Interpreter inter{frag, out, err, in};
 
     SUBCASE("power") {
-        frag->insert("LET x = 2 ** 3");
-        frag->insert("LET y = 3 ** 4");
-        frag->insert("PRINT x");
-        frag->insert("PRINT y");
+        frag->append("LET x = 2 ** 3");
+        frag->append("LET y = 3 ** 4");
+        frag->append("PRINT x");
+        frag->append("PRINT y");
 
         inter.interpret();
 
@@ -26,10 +26,10 @@ TEST_CASE("expression") {
     }
 
     SUBCASE("divide") {
-        frag->insert("LET x = 2 / 3");
-        frag->insert("LET y = 100 / -3");
-        frag->insert("PRINT x");
-        frag->insert("PRINT y");
+        frag->append("LET x = 2 / 3");
+        frag->append("LET y = 100 / -3");
+        frag->append("PRINT x");
+        frag->append("PRINT y");
 
         inter.interpret();
 
@@ -38,10 +38,10 @@ TEST_CASE("expression") {
     }
 
     SUBCASE("modulo") {
-        frag->insert("LET x = 2 MOD 3");
-        frag->insert("LET y = 100 MOD -3");
-        frag->insert("PRINT x");
-        frag->insert("PRINT y");
+        frag->append("LET x = 2 MOD 3");
+        frag->append("LET y = 100 MOD -3");
+        frag->append("PRINT x");
+        frag->append("PRINT y");
 
         inter.interpret();
 
@@ -58,11 +58,11 @@ TEST_CASE("control flow") {
     Interpreter inter{frag, out, err, in};
 
     SUBCASE("goto statement") {
-        frag->insert("LET x = 1");
-        frag->insert("PRINT x");
-        frag->insert("GOTO 4");
-        frag->insert("LET x = x+2");
-        frag->insert("PRINT x");
+        frag->append("LET x = 1");   // 100
+        frag->append("PRINT x");     // 110
+        frag->append("GOTO 140");    // 120
+        frag->append("LET x = x+2"); // 130
+        frag->append("PRINT x");     // 140
 
         inter.interpret();
 
@@ -70,12 +70,12 @@ TEST_CASE("control flow") {
     }
 
     SUBCASE("if statement") {
-        frag->insert("LET T = 5");       // 0
-        frag->insert("IF T = 0 THEN 5"); // 1
-        frag->insert("PRINT T");         // 2
-        frag->insert("LET T = T - 1");   // 3
-        frag->insert("GOTO 1");          // 4
-        frag->insert("END");             // 5
+        frag->append("LET T = 5");         // 100
+        frag->append("IF T = 0 THEN 150"); // 110
+        frag->append("PRINT T");           // 120
+        frag->append("LET T = T - 1");     // 130
+        frag->append("GOTO 110");          // 140
+        frag->append("END");               // 150
 
         inter.interpret();
 
@@ -83,13 +83,13 @@ TEST_CASE("control flow") {
     }
 
     SUBCASE("condition") {
-        frag->insert("LET x = 10");       // 0
-        frag->insert("IF x < 9 THEN 4");  // 1
-        frag->insert("IF x > 12 THEN 5"); // 2
-        frag->insert("IF x > 8 THEN 6");  // 3
-        frag->insert("PRINT x - 1");      // 4
-        frag->insert("PRINT x ");         // 5
-        frag->insert("PRINT x  + 1");     // 6
+        frag->append("LET x = 10");         // 100
+        frag->append("IF x < 9 THEN 140");  // 110
+        frag->append("IF x > 12 THEN 150"); // 120
+        frag->append("IF x > 8 THEN 160");  // 130
+        frag->append("PRINT x - 1");        // 140
+        frag->append("PRINT x ");           // 150
+        frag->append("PRINT x  + 1");       // 160
 
         inter.interpret();
 
@@ -107,8 +107,8 @@ TEST_CASE("input variable") {
                           ++input_times;
                       }};
 
-    frag->insert("INPUT x");
-    frag->insert("PRINT x/2");
+    frag->append("INPUT x");
+    frag->append("PRINT x/2");
 
     inter.interpret();
 
@@ -123,13 +123,13 @@ TEST_CASE("comments are lines") {
     std::istringstream in{};
     Interpreter inter{frag, out, err, in};
 
-    frag->insert("LET x = 0");
-    frag->insert("REM 1111111");
-    frag->insert("REM 2222222");
-    frag->insert("LET x = x+1");
-    frag->insert("PRINT x");
-    frag->insert("IF x < 5 THEN 1");
-    frag->insert("IF x < 10 THEN 2");
+    frag->append("LET x = 0");
+    frag->append("REM 1111111"); // 110
+    frag->append("REM 2222222"); // 120
+    frag->append("LET x = x+1");
+    frag->append("PRINT x");
+    frag->append("IF x < 5 THEN 110");
+    frag->append("IF x < 10 THEN 120");
 
     inter.interpret();
 
@@ -145,58 +145,51 @@ TEST_CASE("error detection") {
     Interpreter inter{frag, out, err, in};
 
     SUBCASE("negative exponent") {
-        frag->insert("LET x = 2 ** -3");
-        frag->insert("PRINT x");
+        frag->append("LET x = 2 ** -3");
+        frag->append("PRINT x");
 
         inter.interpret();
 
         CHECK(out.str() == "");
-        CHECK(
-            err.str() ==
-            "Error at line 1, column 13: Unsupported negative exponent: -3\n");
+        CHECK(err.str() == "line 1:18 Unsupported negative exponent: -3\n");
     }
 
     SUBCASE("undefined variable") {
-        frag->insert("PRINT x");
+        frag->append("PRINT x");
 
         inter.interpret();
 
         CHECK(out.str() == "");
-        CHECK(err.str() ==
-              "Error at line 1, column 6: Undefined variable: x\n");
+        CHECK(err.str() == "line 1:11 Undefined variable: x\n");
     }
 
     SUBCASE("divided by zero") {
-        frag->insert("LET x = -2 / -0");
-        frag->insert("PRINT x");
+        frag->append("LET x = -2 / -0");
+        frag->append("PRINT x");
 
         inter.interpret();
 
         CHECK(out.str() == "");
-        CHECK(err.str() ==
-              "Error at line 1, column 13: Division by zero: -2 / 0\n");
+        CHECK(err.str() == "line 1:18 Division by zero: -2 / 0\n");
     }
 
     SUBCASE("modulo by zero") {
-        frag->insert("LET x = -2 MOD 0");
-        frag->insert("PRINT x");
+        frag->append("LET x = -2 MOD 0");
+        frag->append("PRINT x");
 
         inter.interpret();
 
         CHECK(out.str() == "");
-        CHECK(err.str() ==
-              "Error at line 1, column 15: Modulus by zero: -2 MOD 0\n");
+        CHECK(err.str() == "line 1:20 Modulus by zero: -2 MOD 0\n");
     }
 
     SUBCASE("invalid line number") {
-        frag->insert("IF 2 > 1 THEN 20");
-        frag->insert("GOTO 30");
+        frag->append("IF 2 > 1 THEN 20");
+        frag->append("GOTO 30");
 
         inter.interpret();
 
         CHECK(out.str() == "");
-        CHECK(err.str() ==
-              "Error at line 1, column 14: Invalid line number: 20\n"
-              "Error at line 2, column 5: Invalid line number: 30\n");
+        CHECK(err.str() == "runtime error: invalid line number: 20\n");
     }
 }

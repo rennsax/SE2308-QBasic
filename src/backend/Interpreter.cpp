@@ -2,6 +2,7 @@
 #include "common.h"
 #include <BasicANTLR.h>
 
+#include <cassert>
 #include <type_traits>
 #include <unordered_map>
 
@@ -12,25 +13,16 @@ namespace basic {
 
 class InterpretVisitor : public BasicBaseVisitor {
 
+    /// Value type in Basic
     using VarType = std::int32_t;
     using ExprFallback = std::integral_constant<VarType, 0>;
 
 public:
-    // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-    explicit InterpretVisitor(std::ostream &out, std::ostream &err,
-                              std::istream &in,
-                              const std::function<void()> &prompt_fun,
-                              bool enable_log)
-        : out(out), err(err), in(in), show_prompt_ref(prompt_fun),
-          enable_log(enable_log), has_error(false) {
-    }
-
-    // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-    explicit InterpretVisitor(std::ostream &out, std::ostream &err,
-                              std::istream &in,
-                              const std::function<void()> &prompt_fun)
-        : InterpretVisitor(out, err, in, prompt_fun,
-                           /*enable_log =*/false) {
+    explicit InterpretVisitor(
+        std::ostream &out, std::ostream &err,
+        const std::function<std::string()> &input_action) noexcept
+        : out(out), err(err), input_action_ref(input_action) {
+        assert(input_action_ref.get());
     }
 
     ~InterpretVisitor() override = default;
@@ -81,9 +73,8 @@ public:
         for (LSize cur_line = begin(stm_list)->first; cur_line != 0;) {
 
             if (auto it = stm_list.find(cur_line); it == end(stm_list)) {
-                err << "runtime error: invalid line number: " << cur_line
-                    << '\n';
-                has_error = true;
+                runtime_error("invalid line number: " +
+                              std::to_string(cur_line));
                 break;
             }
 
@@ -149,16 +140,15 @@ public:
         auto id = parseId(ctx->ID());
 
         VarType val{};
-        if (show_prompt_ref.get()) {
-            show_prompt_ref();
-        }
-        in >> val;
-        if (!in) {
-            auto wrong_token = ctx->INPUT()->getSymbol();
-            report_error(wrong_token, "Input error!");
+        std::string input_str = input_action_ref();
+        if (input_str.empty()) {
+            runtime_error("empty input");
+            var_env[id] = ExprFallback::value;
+        } else if (!all_of(begin(input_str), end(input_str), ::isdigit)) {
+            runtime_error("invalid input: " + input_str);
             var_env[id] = ExprFallback::value;
         } else {
-            var_env[id] = val;
+            var_env[id] = std::stoi(input_str);
         }
         return {};
     }
@@ -178,7 +168,7 @@ public:
             auto wrong_token = ctx->expr(1)->getStart();
             std::stringstream err_ss{};
             err_ss << "Unsupported negative exponent: " << exponent;
-            report_error(wrong_token, err_ss.str());
+            static_error(wrong_token, err_ss.str());
             return ExprFallback::value;
         }
 
@@ -193,7 +183,7 @@ public:
             auto wrong_token = ctx->expr(1)->getStart();
             std::stringstream err_ss{};
             err_ss << "Division by zero: " << dividend << " / " << divisor;
-            report_error(wrong_token, err_ss.str());
+            static_error(wrong_token, err_ss.str());
             return ExprFallback::value;
         }
 
@@ -225,7 +215,7 @@ public:
             auto wrong_token = ctx->ID()->getSymbol();
             std::stringstream err_ss{};
             err_ss << "Undefined variable: " << var_name;
-            report_error(wrong_token, err_ss.str());
+            static_error(wrong_token, err_ss.str());
             return ExprFallback::value;
         } else {
             return it->second;
@@ -245,7 +235,7 @@ public:
             auto wrong_token = ctx->expr(1)->getStart();
             std::stringstream err_ss{};
             err_ss << "Modulus by zero: " << dividend << " MOD " << modulus;
-            report_error(wrong_token, err_ss.str());
+            static_error(wrong_token, err_ss.str());
             return ExprFallback::value;
         }
 
@@ -265,11 +255,9 @@ public:
 
 private:
     std::ostream &out, &err;
-    std::istream &in;
-    std::reference_wrapper<const std::function<void()>> show_prompt_ref;
+    std::reference_wrapper<const std::function<std::string()>> input_action_ref;
 
-    bool enable_log;
-    bool has_error;
+    bool has_error = false;
 
     std::unordered_map<std::string, VarType> var_env;
 
@@ -307,23 +295,31 @@ private:
         return result;
     }
 
-    void report_error(Token *wrong_token, const std::string &msg) {
+    void static_error(Token *wrong_token, const std::string &msg) {
         log_error(err, wrong_token->getLine(),
                   wrong_token->getCharPositionInLine() + 1, msg);
         has_error = true;
     }
-};
 
+    void runtime_error(std::string_view msg) {
+        err << "runtime error: " << msg << '\n';
+        has_error = true;
+    }
+};
 Interpreter::Interpreter(std::shared_ptr<Fragment> frag, std::ostream &out,
                          std::ostream &err, std::istream &is)
-    : Interpreter(std::move(frag), out, err, is, /*show_prompt=*/{}) {
+    : Interpreter(std::move(frag), out, err, [&is]() -> std::string {
+          std::string input_str{};
+          std::getline(is, input_str);
+          return input_str;
+      }) {
 }
 
 Interpreter::Interpreter(std::shared_ptr<Fragment> frag, std::ostream &out,
-                         std::ostream &err, std::istream &is,
-                         std::function<void()> prompt)
-    : frag(std::move(frag)), out(out), err(err), is(is),
-      show_prompt(std::move(prompt)) {
+                         std::ostream &err,
+                         std::function<std::string()> input_action)
+    : frag(std::move(frag)), out(out), err(err),
+      input_action(std::move(input_action)) {
 }
 
 void Interpreter::interpret() {
@@ -339,7 +335,7 @@ void Interpreter::interpret() {
     tree::ParseTree *tree = parser.prog();
 
     // Visitor, interpret
-    InterpretVisitor visitor{out, err, is, show_prompt};
+    InterpretVisitor visitor{out, err, input_action};
     visitor.visit(tree);
 }
 

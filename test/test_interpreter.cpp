@@ -103,8 +103,11 @@ TEST_CASE("input variable") {
     std::ostringstream err{};
     std::istringstream in{"20"};
     int input_times = 0;
-    Interpreter inter{frag, out, err, in, [&]() {
+    Interpreter inter{frag, out, err, [&]() -> std::string {
                           ++input_times;
+                          std::string input{};
+                          std::getline(in, input);
+                          return input;
                       }};
 
     frag->append("INPUT x");

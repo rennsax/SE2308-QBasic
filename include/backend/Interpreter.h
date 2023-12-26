@@ -8,21 +8,25 @@ namespace basic {
 
 class Interpreter {
 public:
-    Interpreter(std::shared_ptr<Fragment> frag, std::ostream &out,
-                std::ostream &err, std::istream &is);
-
     /**
      * @brief Construct a new Interpreter object
      *
      * @param frag The code fragment to be interpreted.
      * @param out, err The output and error streams.
-     * @param is The input stream.
-     * @param show_prompt The prompt function. Invoked when `INPUT` clauses are
+     * @param input_action The action to be performed when `INPUT` statement is
      * interpreted.
      */
     Interpreter(std::shared_ptr<Fragment> frag, std::ostream &out,
-                std::ostream &err, std::istream &is,
-                std::function<void()> show_prompt);
+                std::ostream &err, std::function<std::string()> input_action);
+
+    /**
+     * @b A convenient overload.
+     *
+     * The input action is initialized as: read a line from the standard is each
+     * time.
+     */
+    Interpreter(std::shared_ptr<Fragment> frag, std::ostream &out,
+                std::ostream &err, std::istream &is);
 
     ~Interpreter() = default;
 
@@ -45,13 +49,11 @@ private:
     /// The Basic code to be interpreted.
     std::shared_ptr<Fragment> frag{};
 
-    /// Standard output, error, and input streams that are bind to the Basic
+    /// Standard output, error streams that are bind to the Basic
     /// interpreter.
     std::ostream &out, &err;
-    std::istream &is;
 
-    /// Invoked when `INPUT` is interpreted.
-    std::function<void()> show_prompt{};
+    std::function<std::string()> input_action;
 };
 
 }; // namespace basic

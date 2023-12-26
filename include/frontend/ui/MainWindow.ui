@@ -37,6 +37,9 @@ QTextBrowser {
 	font-size: 16px;
 	font-family: &quot;FiraCode Nerd Font&quot;;
 }
+QLineEdit {
+	padding: 0 10px;
+}
 /** END QBasic */
 
 QMainWindow {
@@ -515,7 +518,7 @@ QTimeEdit, QToolBox, QToolBox::tab, QToolBox::tab:selected {
      <x>20</x>
      <y>20</y>
      <width>561</width>
-     <height>251</height>
+     <height>254</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" name="lt_browser" stretch="0,0">
@@ -563,7 +566,7 @@ QTimeEdit, QToolBox, QToolBox::tab, QToolBox::tab:selected {
         <property name="minimumSize">
          <size>
           <width>200</width>
-          <height>200</height>
+          <height>220</height>
          </size>
         </property>
        </widget>
@@ -605,7 +608,7 @@ QTimeEdit, QToolBox, QToolBox::tab, QToolBox::tab:selected {
         <property name="minimumSize">
          <size>
           <width>200</width>
-          <height>200</height>
+          <height>220</height>
          </size>
         </property>
        </widget>
@@ -614,7 +617,7 @@ QTimeEdit, QToolBox, QToolBox::tab, QToolBox::tab:selected {
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>20</x>
@@ -670,7 +673,7 @@ QTimeEdit, QToolBox, QToolBox::tab, QToolBox::tab:selected {
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>20</x>
@@ -727,7 +730,7 @@ QTimeEdit, QToolBox, QToolBox::tab, QToolBox::tab:selected {
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>20</x>

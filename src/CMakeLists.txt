@@ -25,6 +25,7 @@ target_link_libraries(qbasic-frontend
     PUBLIC
     Qt6::Widgets
     Qt6::Gui
+    qbasic-backend
 )
 
 set_target_properties(qbasic-frontend PROPERTIES

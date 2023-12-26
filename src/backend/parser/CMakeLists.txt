@@ -42,6 +42,8 @@ target_include_directories(basic-parser
     PUBLIC
     ${ANTLR_BasicParser_OUTPUT_DIR}
     ${ANTLR4_INCLUDE_DIRS}
+    INTERFACE
+    ${PROJECT_SOURCE_DIR}/include/backend/parser
 )
 
 target_link_libraries(basic-parser

@@ -14,7 +14,7 @@ END: 'END';
 MOD: 'MOD';
 
 ID: LETTER (LETTER | [0-9])*;
-INT: [1-9][0-9]*;
+INT: [0-9] | [1-9][0-9]*;
 
 POWER: '**';
 MULT: '*';
@@ -27,7 +27,7 @@ EQUAL: '=';
 LPAREN: '(';
 RPAREN: ')';
 
-COMMENT: REM .*? NL -> skip;
+// COMMENT: REM .*? NL -> skip;
 
 WS: [ \t\r]+ -> skip;
 NL: '\n';
@@ -40,7 +40,8 @@ prog: stm0*;
 
 /** Greedy: try to match a statement */
 stm0:
-	stm NL? // If stm exists, NL is optional (last statement).
+	stm NL // "\n" or "\r\n" is necessary
+	| REM .*? NL // Match a comment.
 	| NL; // Match an empty line.
 
 stm:
@@ -72,5 +73,3 @@ expr:
 	| LPAREN expr RPAREN				# ParenExpr
 	| INT								# IntExpr
 	| ID								# VarExpr;
-
-empty_line: NL;

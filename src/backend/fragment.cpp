@@ -8,6 +8,14 @@ Fragment::Fragment() {
 Fragment::Fragment(std::string_view delimiter) : delimiter_(delimiter) {
 }
 
+Fragment::Fragment(const Fragment &other) noexcept
+    : lines_(other.lines_), delimiter_(other.delimiter_) {
+}
+
+Fragment::Fragment(Fragment &&other) noexcept
+    : lines_(std::move(other.lines_)), delimiter_(std::move(other.delimiter_)) {
+}
+
 bool Fragment::insert(const std::string &line, LSize pos) noexcept {
     if (pos > lines_.size()) {
         return false;

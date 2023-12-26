@@ -1,7 +1,7 @@
 #ifndef BASIC_FRAGMENT_H
 #define BASIC_FRAGMENT_H
 
-#include <cstdint>
+#include "common.h"
 #include <list>
 #include <optional>
 #include <sstream>
@@ -11,8 +11,6 @@
 namespace basic {
 
 class Fragment {
-    /// Line size type
-    using LSize = std::uint32_t;
 
 public:
     explicit Fragment();
@@ -27,6 +25,14 @@ public:
      * (LF) or "\r\n"(CRLF). Default to be "\n".
      */
     explicit Fragment(std::string_view delimiter);
+
+    Fragment(const Fragment &other) noexcept;
+    Fragment(Fragment &&other) noexcept;
+
+    Fragment &operator=(const Fragment &other) = delete;
+    Fragment &operator=(Fragment &&other) = delete;
+
+    ~Fragment() = default;
 
     /**
      * Inserts a line at the specified position.

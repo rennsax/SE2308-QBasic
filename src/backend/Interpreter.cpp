@@ -18,14 +18,19 @@ class InterpretVisitor : public BasicBaseVisitor {
 public:
     // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
     explicit InterpretVisitor(std::ostream &out, std::ostream &err,
-                              std::istream &in, bool enable_log)
-        : out(out), err(err), in(in), enable_log(enable_log), has_error(false) {
+                              std::istream &in,
+                              const std::function<void()> &prompt_fun,
+                              bool enable_log)
+        : out(out), err(err), in(in), show_prompt_ref(prompt_fun),
+          enable_log(enable_log), has_error(false) {
     }
 
     // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
     explicit InterpretVisitor(std::ostream &out, std::ostream &err,
-                              std::istream &in)
-        : InterpretVisitor(out, err, in, false) {
+                              std::istream &in,
+                              const std::function<void()> &prompt_fun)
+        : InterpretVisitor(out, err, in, prompt_fun,
+                           /*enable_log =*/false) {
     }
 
     ~InterpretVisitor() override = default;
@@ -146,7 +151,9 @@ public:
         auto id = parseId(ctx->ID());
 
         VarType val{};
-        out << "? ";
+        if (show_prompt_ref.get()) {
+            show_prompt_ref();
+        }
         in >> val;
         if (!in) {
             auto wrong_token = ctx->INPUT()->getSymbol();
@@ -263,6 +270,8 @@ public:
 private:
     std::ostream &out, &err;
     std::istream &in;
+    std::reference_wrapper<const std::function<void()>> show_prompt_ref;
+
     bool enable_log;
     bool has_error;
 
@@ -309,7 +318,14 @@ private:
 
 Interpreter::Interpreter(std::shared_ptr<Fragment> frag, std::ostream &out,
                          std::ostream &err, std::istream &is)
-    : out(out), err(err), is(is), frag(std::move(frag)) {
+    : Interpreter(std::move(frag), out, err, is, /*show_prompt=*/{}) {
+}
+
+Interpreter::Interpreter(std::shared_ptr<Fragment> frag, std::ostream &out,
+                         std::ostream &err, std::istream &is,
+                         std::function<void()> prompt)
+    : frag(std::move(frag)), out(out), err(err), is(is),
+      show_prompt(std::move(prompt)) {
 }
 
 void Interpreter::interpret() {
@@ -325,7 +341,7 @@ void Interpreter::interpret() {
     tree::ParseTree *tree = parser.prog();
 
     // Visitor, interpret
-    InterpretVisitor visitor{out, err, is};
+    InterpretVisitor visitor{out, err, is, show_prompt};
     visitor.visit(tree);
 }
 

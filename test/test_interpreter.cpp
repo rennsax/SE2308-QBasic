@@ -97,6 +97,25 @@ TEST_CASE("control flow") {
     }
 }
 
+TEST_CASE("input variable") {
+    auto frag = std::make_shared<Fragment>();
+    std::ostringstream out{};
+    std::ostringstream err{};
+    std::istringstream in{"20"};
+    int input_times = 0;
+    Interpreter inter{frag, out, err, in, [&]() {
+                          ++input_times;
+                      }};
+
+    frag->insert("INPUT x");
+    frag->insert("PRINT x/2");
+
+    inter.interpret();
+
+    CHECK(out.str() == "10\n");
+    CHECK(input_times == 1);
+}
+
 TEST_CASE("comments are lines") {
     auto frag = std::make_shared<Fragment>();
     std::ostringstream out{};

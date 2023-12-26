@@ -9,7 +9,8 @@ Checks: >
   -bugprone-suspicious-include,
   -cppcoreguidelines-owning-memory,
   -cppcoreguidelines-avoid-do-while,
-  -cert-err33-c
+  -cert-err33-c,
+  -cppcoreguidelines-avoid-magic-numbers
 # -cppcoreguidelines-special-member-functions,
 
 WarningsAsErrors: ''

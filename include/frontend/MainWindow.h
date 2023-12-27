@@ -16,32 +16,6 @@ class Window;
 
 namespace basic {
 
-class QBInterpreterWorker : public QObject {
-    Q_OBJECT
-
-public:
-    explicit QBInterpreterWorker(const std::shared_ptr<Fragment> &frag,
-                                 QWidget *input_sender);
-    ~QBInterpreterWorker() override = default;
-
-    // No copy or move.
-    QBInterpreterWorker(const QBInterpreterWorker &) = delete;
-    QBInterpreterWorker(QBInterpreterWorker &&) = delete;
-    QBInterpreterWorker &operator=(const QBInterpreterWorker &) = delete;
-    QBInterpreterWorker &operator=(QBInterpreterWorker &&) = delete;
-
-public slots:
-    void doWork();
-
-signals:
-    void resultReady(QString result);
-    void requestInput();
-
-private:
-    std::shared_ptr<Fragment> frag;
-    QWidget *input_sender;
-};
-
 class MainWindow : public QWidget {
     Q_OBJECT
 public:

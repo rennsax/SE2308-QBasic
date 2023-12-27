@@ -439,4 +439,9 @@ std::any ASTConstructVisitor::visitMinusExpr(
     visitBinaryOpExpr(ctx, "-");
     return {};
 }
+std::any ASTConstructVisitor::visitErrStm(BasicParser::ErrStmContext *ctx) {
+    ast_out("ERROR");
+    ast_newline();
+    return {};
+}
 } // namespace basic_visitor

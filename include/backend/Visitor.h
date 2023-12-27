@@ -155,6 +155,8 @@ public:
 
     std::any visitStm0(BasicParser::Stm0Context *ctx) override;
 
+    std::any visitErrStm(BasicParser::ErrStmContext *ctx) override;
+
     std::any visitEndStm(BasicParser::EndStmContext *ctx) override;
 
     std::any visitGotoStm(BasicParser::GotoStmContext *ctx) override;

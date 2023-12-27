@@ -1,9 +1,11 @@
 #include "moc_MainWindow.cpp"
 #include "ui_MainWindow.h"
 
+#include <QEventLoop>
 #include <QFileDialog>
 #include <QKeyEvent>
 #include <QPushButton>
+#include <QThread>
 #include <fstream>
 
 namespace basic {
@@ -26,7 +28,6 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 void MainWindow::execute(std::string_view command) {
-    qDebug() << command;
 
     std::stringstream cmd_ss{std::string{command}};
     ws(cmd_ss);
@@ -94,15 +95,29 @@ auto MainWindow::getCommandType(std::string_view command) -> CommandType {
 }
 
 void MainWindow::run() {
-    // TODO
-    std::stringstream out{};
-    std::stringstream err{};
-    std::stringstream in{};
-    Interpreter interpreter{this->frag, out, err, in};
+    QThread *thread = new QThread{};
+    QBInterpreterWorker *worker = new QBInterpreterWorker{frag, this};
+    worker->moveToThread(thread);
 
-    interpreter.interpret();
+    connect(thread, &QThread::started, worker, &QBInterpreterWorker::doWork);
+    connect(worker, &QBInterpreterWorker::resultReady, this,
+            &MainWindow::workerFinish);
+    connect(worker, &QBInterpreterWorker::requestInput, [this]() {
+        this->ui->input->setText("? ");
+        this->ui->input->setFocus();
+        this->is_inputting = true;
+    });
 
-    this->ui->result_browser->setText(QString::fromStdString(out.str()));
+    // Each thread is responsible for only one worker. After the worker
+    // finishes, the thread shuts down, and the resource is released later.
+    connect(worker, &QBInterpreterWorker::resultReady, thread, &QThread::quit);
+    connect(worker, &QBInterpreterWorker::resultReady, thread,
+            &QThread::deleteLater);
+    connect(thread, &QThread::finished, worker,
+            &QBInterpreterWorker::deleteLater);
+
+    is_runnning = true;
+    thread->start();
 }
 
 void MainWindow::load() {
@@ -140,7 +155,21 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
     if (event->key() == Qt::Key_Return) {
         auto command = this->ui->input->text();
         this->ui->input->clear();
-        execute(command.toStdString());
+        if (is_runnning) {
+            if (!is_inputting) {
+                return;
+            }
+
+            if (command.startsWith("? ")) {
+                qDebug() << "[main] send input to the worker thread";
+                sendInput(command.sliced(2));
+            } else {
+                this->ui->input->setText("? ");
+            }
+
+        } else {
+            execute(command.toStdString());
+        }
     }
 }
 
@@ -148,5 +177,48 @@ void MainWindow::paintEvent(QPaintEvent *event) {
     auto code_str = this->frag->render();
 
     this->ui->code_browser->setText(QString::fromStdString(code_str));
+}
+
+void MainWindow::workerFinish(QString result) {
+    qDebug() << "[main] worker finished";
+    this->ui->result_browser->setText(result);
+    is_runnning = false;
+}
+
+void QBInterpreterWorker::doWork() {
+    qDebug() << "[worker] doWork()";
+
+    std::stringstream out{};
+    std::stringstream err{};
+
+    auto input_action = [this]() -> std::string {
+        QEventLoop loop{};
+        std::string input_str{};
+
+        connect(dynamic_cast<MainWindow *>(input_sender),
+                &MainWindow::sendInput, &loop, &QEventLoop::quit);
+        connect(dynamic_cast<MainWindow *>(input_sender),
+                &MainWindow::sendInput, [&input_str](QString input) {
+                    input_str = input.toStdString();
+                });
+        emit requestInput();
+
+        // Start a local event loop to wait for the input.
+        qDebug() << "[worker] waiting for input...";
+        loop.exec();
+
+        return input_str;
+    };
+
+    Interpreter interpreter{frag, out, err, std::move(input_action)};
+
+    interpreter.interpret();
+
+    emit resultReady(QString::fromStdString(out.str()));
+}
+
+QBInterpreterWorker::QBInterpreterWorker(const std::shared_ptr<Fragment> &frag,
+                                         QWidget *input_sender)
+    : frag(frag), input_sender(input_sender) {
 }
 } // namespace basic

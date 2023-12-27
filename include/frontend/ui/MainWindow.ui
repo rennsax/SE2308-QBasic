@@ -34,7 +34,7 @@ QPushButton {
 	font-size: 18px;
 }
 QTextBrowser {
-	font-size: 16px;
+	font-size: 12px;
 	font-family: &quot;FiraCode Nerd Font&quot;;
 }
 QLineEdit {
@@ -569,6 +569,9 @@ QTimeEdit, QToolBox, QToolBox::tab, QToolBox::tab:selected {
           <height>220</height>
          </size>
         </property>
+        <property name="placeholderText">
+         <string>Your Code</string>
+        </property>
        </widget>
       </item>
      </layout>
@@ -610,6 +613,9 @@ QTimeEdit, QToolBox, QToolBox::tab, QToolBox::tab:selected {
           <width>200</width>
           <height>220</height>
          </size>
+        </property>
+        <property name="placeholderText">
+         <string>Output and error message</string>
         </property>
        </widget>
       </item>

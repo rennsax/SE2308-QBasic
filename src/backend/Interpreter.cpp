@@ -9,8 +9,8 @@
 using namespace antlr_basic;
 using namespace antlr4;
 
-namespace basic {
-
+namespace {
+using namespace basic;
 class InterpretVisitor : public BasicBaseVisitor {
 
     /// Value type in Basic
@@ -306,6 +306,22 @@ private:
         has_error = true;
     }
 };
+
+class CustomErrorListener : public BaseErrorListener {
+
+    void syntaxError(Recognizer *recognizer, Token *offendingSymbol,
+                     size_t line, size_t charPositionInLine,
+                     const std::string &msg, std::exception_ptr e) override {
+        last_err_line = line;
+    }
+
+public:
+    LSize last_err_line = 0;
+};
+} // namespace
+
+namespace basic {
+
 Interpreter::Interpreter(std::shared_ptr<Fragment> frag, std::ostream &out,
                          std::ostream &err, std::istream &is)
     : Interpreter(std::move(frag), out, err, [&is]() -> std::string {
@@ -332,11 +348,28 @@ void Interpreter::interpret() {
 
     // Parser, get AST
     BasicParser parser(&tokens);
-    tree::ParseTree *tree = parser.prog();
+    parser.setErrorHandler(std::make_shared<BailErrorStrategy>());
+    parser.removeErrorListeners();
+    CustomErrorListener my_lister{};
+    parser.addErrorListener(&my_lister);
 
-    // Visitor, interpret
-    InterpretVisitor visitor{out, err, input_action};
-    visitor.visit(tree);
+    while (1) {
+        try {
+            tree::ParseTree *tree = parser.prog();
+            // Visitor, interpret
+            InterpretVisitor visitor{out, err, input_action};
+            visitor.visit(tree);
+            break;
+        } catch (const std::exception &e) {
+            auto maybe_line_num =
+                this->frag->get_line_number_at(my_lister.last_err_line);
+            assert(maybe_line_num.has_value());
+            // The line to be modified.
+            LSize line_num = maybe_line_num.value();
+            this->frag->remove(line_num);
+            this->frag->insert(line_num, "___ERROR___");
+        }
+    }
 }
 
 std::string Interpreter::show_ast() const {

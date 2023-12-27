@@ -12,6 +12,7 @@ PRINT: 'PRINT';
 INPUT: 'INPUT';
 END: 'END';
 MOD: 'MOD';
+ERROR: '___ERROR___';
 
 ID: LETTER (LETTER | [0-9])*;
 INT: [0-9] | [1-9][0-9]*;
@@ -31,6 +32,7 @@ COMMENT: REM .*? NL;
 
 WS: [ \t\r]+ -> skip;
 NL: '\n';
+EXTRA: .;
 
 /** parser */
 main: prog EOF;
@@ -51,7 +53,8 @@ stm:
 	| input_stm
 	| goto_stm
 	| if_stm
-	| end_stm;
+	| end_stm
+	| error_stm;
 
 empty_stm: NL;
 
@@ -62,6 +65,7 @@ goto_stm: GOTO INT # GotoStm;
 cmp_op: EQUAL | LT | GT;
 if_stm: IF expr cmp_op expr THEN INT # IfStm;
 end_stm: END # EndStm;
+error_stm: ERROR # ErrStm;
 
 expr:
 	MINUS expr							# NegExpr

@@ -262,10 +262,8 @@ void InterpretVisitor::static_error(Token *wrong_token,
                                     const std::string &msg) {
     log_error(err, wrong_token->getLine(),
               wrong_token->getCharPositionInLine() + 1, msg);
-    has_error = true;
 }
 void InterpretVisitor::runtime_error(std::string_view msg) {
     err << "runtime error: " << msg << '\n';
-    has_error = true;
 }
 } // namespace basic_visitor

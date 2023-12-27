@@ -76,8 +76,6 @@ private:
     std::ostream &out, &err;
     std::reference_wrapper<const std::function<std::string()>> input_action_ref;
 
-    bool has_error = false;
-
     std::unordered_map<std::string, VarType> var_env;
 
     std::map<LSize, BasicParser::StmContext *> stm_list{};

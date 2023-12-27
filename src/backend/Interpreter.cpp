@@ -93,7 +93,10 @@ std::string Interpreter::show_ast() {
     rewrite();
     GET_BASIC_PARSER();
     tree::ParseTree *tree = parser.prog();
-    return tree->toStringTree(true);
+
+    basic_visitor::InterpretVisitor visitor{out, err, input_action};
+    visitor.visit(tree);
+    return visitor.get_ast();
 }
 
 void Interpreter::rewrite() {

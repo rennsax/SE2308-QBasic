@@ -26,6 +26,10 @@ public:
     InterpretVisitor &operator=(const InterpretVisitor &other) = delete;
     InterpretVisitor &operator=(InterpretVisitor &&other) = delete;
 
+    std::string get_ast() const noexcept {
+        return ast_ss.str();
+    }
+
     /**
      * @brief
      *
@@ -78,10 +82,25 @@ private:
 
     std::unordered_map<std::string, VarType> var_env;
 
-    std::map<LSize, BasicParser::StmContext *> stm_list{};
+    /// AST-related data structure
+    bool show_ast = true;
+    std::size_t indent_size = 0;
+    std::stringstream ast_ss{};
+    template <typename T> void ast_out(T &&msg) {
+        if (show_ast) {
+            ast_ss << std::forward<T>(msg);
+        }
+    }
+    void ast_indent() {
+        if (show_ast) {
+            ast_ss << std::string(indent_size, '\t');
+        }
+    }
+    ///
 
     /**
-     * @brief Just a wrapper for #visit, which convert the result to #ValType.
+     * @brief Just a wrapper for #visit, which convert the result to
+     * #ValType.
      *
      * @param ctx
      * @return VarType

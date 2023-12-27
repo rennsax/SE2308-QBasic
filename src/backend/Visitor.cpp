@@ -1,5 +1,7 @@
 #include "Visitor.h"
 
+using namespace std::string_literals;
+
 namespace basic_visitor {
 
 InterpretVisitor::InterpretVisitor(
@@ -18,46 +20,64 @@ std::any InterpretVisitor::visitProg(BasicParser::ProgContext *ctx) {
     if (stm0_list.empty()) {
         return {};
     }
+    std::map<LSize, BasicParser::StmContext *> stm_list{};
+    std::map<LSize, std::string> comment_list{}; // Trimmed
 
-    transform(
-        begin(stm0_list), end(stm0_list), inserter(stm_list, end(stm_list)),
-        [this](
-            BasicParser::Stm0Context *stm0) -> decltype(stm_list)::value_type {
-            LSize line_num = std::any_cast<LSize>(visit(stm0->line_num()));
-            return {line_num, stm0->stm()};
-        });
+    for (auto stm0 : stm0_list) {
+        LSize line_num = std::any_cast<LSize>(visit(stm0->line_num()));
+        if (stm0->stm()) {
+            stm_list.insert({line_num, stm0->stm()});
+        } else if (stm0->COMMENT()) {
+            auto comment = stm0->COMMENT()->getText();
+            comment.erase(end(comment) - 1);
 
-    assert(stm_list.size() == stm0_list.size());
+            comment_list.emplace(std::piecewise_construct,
+                                 std::forward_as_tuple(line_num),
+                                 std::forward_as_tuple(std::move(comment)));
+        }
+    }
 
-    auto get_next_line = [this](LSize cur_line) -> LSize {
-        auto nl_it = stm_list.upper_bound(cur_line);
-        if (nl_it == end(stm_list)) {
+    assert(stm_list.size() + comment_list.size() == stm0_list.size());
+
+    auto get_next_line = [&](LSize cur_line) -> LSize {
+        auto nl_it_stm = stm_list.upper_bound(cur_line);
+        auto nl_it_cmt = comment_list.upper_bound(cur_line);
+
+        if (nl_it_stm == end(stm_list) && nl_it_cmt == end(comment_list)) {
             // The prog reaches its end.
             return 0;
-        } else {
-            return nl_it->first;
+        } else if (nl_it_stm == end(stm_list)) {
+            return nl_it_cmt->first;
+        } else if (nl_it_cmt == end(comment_list)) {
+            return nl_it_stm->first;
         }
+        return std::min(nl_it_stm->first, nl_it_cmt->first);
     };
 
     // Interpret
     for (LSize cur_line = begin(stm_list)->first; cur_line != 0;) {
 
-        if (auto it = stm_list.find(cur_line); it == end(stm_list)) {
+        if (comment_list.find(cur_line) == end(comment_list) &&
+            stm_list.find(cur_line) == end(stm_list)) {
             runtime_error("invalid line number: " + std::to_string(cur_line));
             break;
         }
 
-        auto stm_to_visit = stm_list.at(cur_line);
-        if (stm_to_visit == nullptr) {
+        if (comment_list.find(cur_line) != end(comment_list)) {
             // The statement is a comment.
             cur_line = get_next_line(cur_line);
             continue;
         }
 
+        auto stm_to_visit = stm_list.at(cur_line);
+        // The statement may return a line number, which indicates the change of
+        // control flow.
         auto maybe_nl = visit(stm_to_visit);
         if (maybe_nl.has_value()) {
             cur_line = std::any_cast<LSize>(maybe_nl);
         } else {
+            // If the returned line number isn't presented, just fallback to the
+            // next line.
             cur_line = get_next_line(cur_line);
         }
     }

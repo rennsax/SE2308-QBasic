@@ -6,6 +6,8 @@
 
 namespace basic {
 
+/// Value type in Basic
+using VarType = std::int32_t;
 /// Line size type
 using LSize = std::uint32_t;
 /// Column size type

@@ -24,6 +24,13 @@ struct VariableEnv {
         return var.first;
     };
 
+    int get_ref_time(const std::string &var_name) const noexcept {
+        if (!exist(var_name)) {
+            return -1;
+        }
+        return var_env.at(var_name).second;
+    }
+
     bool exist(const std::string &var_name) const noexcept {
         return var_env.find(var_name) != end(var_env);
     }
@@ -53,10 +60,6 @@ public:
     InterpretVisitor(InterpretVisitor &&other) = delete;
     InterpretVisitor &operator=(const InterpretVisitor &other) = delete;
     InterpretVisitor &operator=(InterpretVisitor &&other) = delete;
-
-    std::string get_ast() const noexcept {
-        return ast_ss.str();
-    }
 
     std::shared_ptr<VariableEnv> get_var_env() const noexcept {
         return v_env;
@@ -114,22 +117,6 @@ private:
 
     std::shared_ptr<VariableEnv> v_env{std::make_unique<VariableEnv>()};
 
-    /// AST-related data structure
-    bool show_ast = true;
-    std::size_t indent_size = 0;
-    std::stringstream ast_ss{};
-    template <typename T> void ast_out(T &&msg) {
-        if (show_ast) {
-            ast_ss << std::forward<T>(msg);
-        }
-    }
-    void ast_indent() {
-        if (show_ast) {
-            ast_ss << std::string(indent_size, '\t');
-        }
-    }
-    ///
-
     /**
      * @brief Just a wrapper for #visit, which convert the result to
      * #ValType.
@@ -152,6 +139,90 @@ private:
     void static_error(Token *wrong_token, const std::string &msg);
 
     void runtime_error(std::string_view msg);
+};
+
+class ASTConstructVisitor : public BasicBaseVisitor {
+
+public:
+    explicit ASTConstructVisitor(
+        const std::shared_ptr<VariableEnv> v_env) noexcept;
+
+    std::string get_ast() const noexcept {
+        return ast_ss.str();
+    }
+
+    std::any visitLineNum(BasicParser::LineNumContext *ctx) override;
+
+    std::any visitStm0(BasicParser::Stm0Context *ctx) override;
+
+    std::any visitEndStm(BasicParser::EndStmContext *ctx) override;
+
+    std::any visitGotoStm(BasicParser::GotoStmContext *ctx) override;
+
+    std::any visitIfStm(BasicParser::IfStmContext *ctx) override;
+
+    std::any visitPrintStm(BasicParser::PrintStmContext *ctx) override;
+
+    std::any visitInputStm(BasicParser::InputStmContext *ctx) override;
+
+    std::any visitLetStm(BasicParser::LetStmContext *ctx) override;
+
+    std::any visitPowerExpr(BasicParser::PowerExprContext *ctx) override;
+
+    std::any visitDivExpr(BasicParser::DivExprContext *ctx) override;
+
+    std::any visitPlusExpr(BasicParser::PlusExprContext *ctx) override;
+
+    std::any visitMultExpr(BasicParser::MultExprContext *ctx) override;
+
+    std::any visitNegExpr(BasicParser::NegExprContext *ctx) override;
+
+    std::any visitVarExpr(BasicParser::VarExprContext *ctx) override;
+
+    std::any visitIntExpr(BasicParser::IntExprContext *ctx) override;
+
+    std::any visitModExpr(BasicParser::ModExprContext *ctx) override;
+
+    std::any visitParenExpr(BasicParser::ParenExprContext *ctx) override;
+
+    std::any visitMinusExpr(BasicParser::MinusExprContext *ctx) override;
+
+private:
+    std::shared_ptr<VariableEnv> v_env{};
+    std::size_t indent_size = 0;
+    std::stringstream ast_ss{};
+    bool need_space = false;
+    template <typename T> void ast_out(T &&msg) {
+        if (need_space) {
+            ast_ss << ' ' << std::forward<T>(msg);
+        } else {
+            ast_ss << std::forward<T>(msg);
+            need_space = true;
+        }
+    }
+    void ast_indent(std::size_t indent_cnt) {
+        ast_ss << std::string(indent_cnt, '\t');
+    }
+    void ast_indent() {
+        ast_indent(indent_size);
+    }
+    void ast_newline() {
+        ast_ss << '\n';
+        need_space = false;
+    }
+
+    template <typename Context>
+    void visitBinaryOpExpr(Context *ctx, const std::string &op) {
+        static_assert(std::is_base_of_v<BasicParser::ExprContext, Context>,
+                      "Context must be derived from ExprContext");
+        ast_indent();
+        ast_out(op);
+        ast_newline();
+        indent_size++;
+        visit(ctx->expr(0));
+        visit(ctx->expr(1));
+        indent_size--;
+    }
 };
 
 } // namespace basic_visitor

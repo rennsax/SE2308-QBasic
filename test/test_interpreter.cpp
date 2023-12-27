@@ -260,11 +260,11 @@ TEST_CASE("show AST") {
     Interpreter inter{frag, out, err};
 
     std::stringstream ast_ss{};
-    std::ifstream ast_ifs{"test_cases/fibonacci.ast"};
-    REQUIRE(ast_ifs.is_open());
-    ast_ss << ast_ifs.rdbuf();
+    std::fstream ast_fs{"test_cases/fibonacci.ast", std::ios_base::in};
+    REQUIRE(ast_fs.is_open());
+    ast_ss << ast_fs.rdbuf();
 
-    // CHECK(inter.show_ast() == ast_ss.str());
+    CHECK(inter.show_ast() == ast_ss.str());
 }
 
 TEST_CASE("syntactic error") {

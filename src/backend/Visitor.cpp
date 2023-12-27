@@ -292,4 +292,151 @@ void InterpretVisitor::static_error(Token *wrong_token,
 void InterpretVisitor::runtime_error(std::string_view msg) {
     err << "runtime error: " << msg << '\n';
 }
+
+std::any ASTConstructVisitor::visitLineNum(BasicParser::LineNumContext *ctx) {
+    ast_out(ctx->INT()->getText());
+    return {};
+}
+std::any ASTConstructVisitor::visitStm0(BasicParser::Stm0Context *ctx) {
+    if (ctx->COMMENT()) {
+        // Is comment
+        visit(ctx->line_num());
+        auto comment_str = ctx->COMMENT()->getText();
+        // remove beginning "REM " and NL
+        // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+        comment_str = comment_str.substr(4, comment_str.length() - 5);
+        ast_out("REM\n"s + "\t" + comment_str);
+        ast_newline();
+        return {};
+    }
+    assert(ctx->stm());
+    visitChildren(ctx);
+    return {};
+}
+
+ASTConstructVisitor::ASTConstructVisitor(
+    const std::shared_ptr<VariableEnv> v_env) noexcept
+    : v_env(v_env) {
+}
+
+std::any ASTConstructVisitor::visitEndStm(BasicParser::EndStmContext *ctx) {
+    ast_out("END");
+    ast_newline();
+    return {};
+}
+
+std::any ASTConstructVisitor::visitGotoStm(BasicParser::GotoStmContext *ctx) {
+    ast_out("GOTO");
+    ast_out(ctx->exec_times);
+    ast_newline();
+    ast_indent(1);
+    ast_out(ctx->INT()->getText());
+    ast_newline();
+    return {};
+}
+
+std::any ASTConstructVisitor::visitIfStm(BasicParser::IfStmContext *ctx) {
+    ast_out("IF THEN");
+    ast_out(ctx->true_times);
+    ast_out(ctx->false_times);
+    ast_newline();
+    indent_size++;
+    visit(ctx->expr(0));
+    ast_indent();
+    if (ctx->cmp_op()->EQUAL()) {
+        ast_out("=");
+    } else if (ctx->cmp_op()->GT()) {
+        ast_out(">");
+    } else if (ctx->cmp_op()->LT()) {
+        ast_out("<");
+    }
+    ast_newline();
+    visit(ctx->expr(1));
+    indent_size--;
+    return {};
+}
+
+std::any ASTConstructVisitor::visitPrintStm(BasicParser::PrintStmContext *ctx) {
+    ast_out("PRINT");
+    ast_newline();
+    indent_size++;
+    visit(ctx->expr());
+    indent_size--;
+    return {};
+}
+
+std::any ASTConstructVisitor::visitInputStm(BasicParser::InputStmContext *ctx) {
+    ast_out("INPUT");
+    ast_newline();
+    ast_indent(1);
+    ast_out(ctx->ID()->getText());
+    ast_newline();
+    return {};
+}
+
+std::any ASTConstructVisitor::visitLetStm(BasicParser::LetStmContext *ctx) {
+    ast_out("LET =");
+    ast_out(ctx->exec_times);
+    ast_newline();
+    indent_size++;
+    ast_indent();
+    ast_out(ctx->ID()->getText());
+    ast_out(v_env->get_ref_time(ctx->ID()->getText()));
+    ast_newline();
+    visit(ctx->expr());
+    indent_size--;
+    return {};
+}
+std::any ASTConstructVisitor::visitPowerExpr(
+    BasicParser::PowerExprContext *ctx) {
+    visitBinaryOpExpr(ctx, "**");
+    return {};
+}
+std::any ASTConstructVisitor::visitDivExpr(BasicParser::DivExprContext *ctx) {
+    visitBinaryOpExpr(ctx, "/");
+    return {};
+}
+std::any ASTConstructVisitor::visitPlusExpr(BasicParser::PlusExprContext *ctx) {
+    visitBinaryOpExpr(ctx, "+");
+    return {};
+}
+std::any ASTConstructVisitor::visitMultExpr(BasicParser::MultExprContext *ctx) {
+    visitBinaryOpExpr(ctx, "*");
+    return {};
+}
+std::any ASTConstructVisitor::visitNegExpr(BasicParser::NegExprContext *ctx) {
+    ast_indent();
+    ast_out("-");
+    ast_newline();
+    indent_size++;
+    visit(ctx->expr());
+    indent_size--;
+    return {};
+}
+std::any ASTConstructVisitor::visitVarExpr(BasicParser::VarExprContext *ctx) {
+    ast_indent();
+    ast_out(ctx->ID()->getText());
+    ast_newline();
+    return {};
+}
+std::any ASTConstructVisitor::visitIntExpr(BasicParser::IntExprContext *ctx) {
+    ast_indent();
+    ast_out(ctx->INT()->getText());
+    ast_newline();
+    return {};
+}
+std::any ASTConstructVisitor::visitModExpr(BasicParser::ModExprContext *ctx) {
+    visitBinaryOpExpr(ctx, "%");
+    return {};
+}
+std::any ASTConstructVisitor::visitParenExpr(
+    BasicParser::ParenExprContext *ctx) {
+    visit(ctx->expr());
+    return {};
+}
+std::any ASTConstructVisitor::visitMinusExpr(
+    BasicParser::MinusExprContext *ctx) {
+    visitBinaryOpExpr(ctx, "-");
+    return {};
+}
 } // namespace basic_visitor

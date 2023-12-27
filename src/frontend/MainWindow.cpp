@@ -111,10 +111,7 @@ void MainWindow::run() {
     // Each thread is responsible for only one worker. After the worker
     // finishes, the thread shuts down, and the resource is released later.
     connect(worker, &QBInterpreterWorker::resultReady, thread, &QThread::quit);
-    connect(worker, &QBInterpreterWorker::resultReady, thread,
-            &QThread::deleteLater);
-    connect(thread, &QThread::finished, worker,
-            &QBInterpreterWorker::deleteLater);
+    connect(thread, &QThread::finished, thread, &QThread::deleteLater);
 
     is_runnning = true;
     thread->start();
@@ -215,6 +212,7 @@ void QBInterpreterWorker::doWork() {
     interpreter.interpret();
 
     emit resultReady(QString::fromStdString(out.str()));
+    this->deleteLater();
 }
 
 QBInterpreterWorker::QBInterpreterWorker(const std::shared_ptr<Fragment> &frag,

@@ -21,6 +21,8 @@ TEST_CASE("fragment manipulate") {
 
     CHECK(frag.render() == "105 SJTU\n110 world\n115 QT\n120 what?\n");
     CHECK(frag.get_line(115) == "QT");
+    CHECK(frag.get_line_number_at(1).value_or(0) == 105);
+    CHECK(frag.get_line_number_at(3).value_or(0) == 115);
 
     // Fragment should refuse to insert empty line.
     CHECK(frag.insert(200, "") == false);

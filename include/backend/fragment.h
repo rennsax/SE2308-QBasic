@@ -93,15 +93,25 @@ public:
     /**
      * Retrieves the line at the specified position.
      *
-     * @param pos The position of the line to retrieve.
+     * @param line_num The position of the line to retrieve.
      * @return An optional string containing the line at the specified position,
      * or an empty optional if the position is invalid.
      */
-    std::optional<std::string> get_line(LSize pos) const noexcept;
+    std::optional<std::string> get_line(LSize line_num) const noexcept;
 
     LSize size() const noexcept {
         return lines_.size();
     }
+
+    /**
+     * @brief Get the line number at the "absolute" position of the fragment.
+     *
+     * @param pos The absolute position of the line to retrieve. The index
+     * begins with 1, which corresponds to the error reporting in ANTLR.
+     * @return std::optional<LSize> If pos == 0 or pos >= size(), return an
+     * empty result.
+     */
+    std::optional<LSize> get_line_number_at(std::size_t pos) const noexcept;
 
 private:
     using LineContainer = std::map<LSize, std::string>;

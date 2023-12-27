@@ -95,6 +95,14 @@ std::optional<std::string> Fragment::get_line(LSize pos) const noexcept {
     return get_iter_(pos)->second;
 }
 
+std::optional<LSize> Fragment::get_line_number_at(
+    std::size_t pos) const noexcept {
+    if (pos == 0 || pos > size()) {
+        return std::nullopt;
+    }
+    return next(begin(lines_), static_cast<int>(pos - 1))->first;
+}
+
 auto Fragment::get_iter_(LSize pos) const -> LineConstIter {
     return lines_.find(pos);
 }

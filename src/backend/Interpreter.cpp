@@ -371,6 +371,23 @@ public:
 
 namespace basic {
 
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#define GET_BASIC_PARSER()                                                     \
+    auto code_stream = frag->get_frag_stream();                                \
+    ANTLRInputStream input(code_stream);                                       \
+                                                                               \
+    /* Lexer, get tokens */                                                    \
+    BasicLexer lexer(&input);                                                  \
+    CommonTokenStream tokens(&lexer);                                          \
+    tokens.fill();                                                             \
+                                                                               \
+    /* Configure a parse */                                                    \
+    BasicParser parser(&tokens);                                               \
+    parser.setErrorHandler(std::make_shared<ThrowExceptionStrategy>());        \
+    parser.removeErrorListeners();                                             \
+    CustomErrorListener my_lister{};                                           \
+    parser.addErrorListener(&my_lister);
+
 Interpreter::Interpreter(std::shared_ptr<Fragment> frag, std::ostream &out,
                          std::ostream &err, std::istream &is)
     : Interpreter(std::move(frag), out, err, [&is]() -> std::string {
@@ -395,30 +412,33 @@ Interpreter::Interpreter(std::shared_ptr<Fragment> frag, std::ostream &out,
 }
 
 void Interpreter::interpret() {
+    rewrite();
+    GET_BASIC_PARSER();
 
+    tree::ParseTree *tree = parser.prog();
+
+    // Visitor, interpret
+    InterpretVisitor visitor{out, err, input_action};
+    visitor.visit(tree);
+}
+
+std::string Interpreter::show_ast() {
+    rewrite();
+    GET_BASIC_PARSER();
+    tree::ParseTree *tree = parser.prog();
+    return tree->toStringTree(true);
+}
+
+void Interpreter::rewrite() {
+    if (already_rewritten) {
+        return;
+    }
     bool already_done = false;
     while (!already_done) {
-        auto code_stream = frag->get_frag_stream();
-        ANTLRInputStream input(code_stream);
-
-        // Lexer, get tokens
-        BasicLexer lexer(&input);
-        CommonTokenStream tokens(&lexer);
-        tokens.fill();
-
-        // Configure a parse
-        BasicParser parser(&tokens);
-        parser.setErrorHandler(std::make_shared<ThrowExceptionStrategy>());
-        parser.removeErrorListeners();
-        CustomErrorListener my_lister{};
-        parser.addErrorListener(&my_lister);
-
+        GET_BASIC_PARSER();
         try {
-            // Parser, get AST
+            // Try to parser, get AST
             tree::ParseTree *tree = parser.prog();
-            // Visitor, interpret
-            InterpretVisitor visitor{out, err, input_action};
-            visitor.visit(tree);
             already_done = true;
 
         } catch (const RecognitionException &e) {
@@ -428,26 +448,12 @@ void Interpreter::interpret() {
             // The line to be modified.
             LSize line_num = maybe_line_num.value();
             this->frag->remove(line_num);
-            this->frag->insert(line_num, "___ERROR___");
+            this->frag->insert(line_num, ERROR_LINE);
         } catch (const std::exception &e) {
             assert(0);
         }
     }
-}
-
-std::string Interpreter::show_ast() const {
-    auto code_stream = frag->get_frag_stream();
-
-    // Lexer, get tokens
-    ANTLRInputStream input(code_stream);
-    BasicLexer lexer(&input);
-    CommonTokenStream tokens(&lexer);
-
-    // Parser, get AST
-    BasicParser parser(&tokens);
-    tree::ParseTree *tree = parser.prog();
-
-    return tree->toStringTree(true);
+    already_rewritten = true;
 }
 
 } // namespace basic

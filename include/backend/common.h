@@ -11,6 +11,8 @@ using LSize = std::uint32_t;
 /// Column size type
 using CSize = std::uint32_t;
 
+const char *const ERROR_LINE = "___ERROR___";
+
 /**
  * Logs an error message with the specified line number, column number, and
  * message.

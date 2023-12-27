@@ -50,7 +50,7 @@ public:
      */
     void interpret();
 
-    std::string show_ast() const;
+    std::string show_ast();
 
 private:
     /// The Basic code to be interpreted.
@@ -61,6 +61,9 @@ private:
     std::ostream &out, &err;
 
     std::function<std::string()> input_action;
+
+    void rewrite();
+    bool already_rewritten = false;
 };
 
 }; // namespace basic

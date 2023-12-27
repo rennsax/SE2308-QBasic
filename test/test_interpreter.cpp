@@ -280,6 +280,6 @@ TEST_CASE("syntactic error") {
     inter.interpret();
 
     for (std::size_t i = 0; i < frag->size(); ++i) {
-        CHECK(frag->get_line(100 + 10 * i).value_or("") == "___ERROR___");
+        CHECK(frag->get_line(100 + 10 * i).value_or("") == ERROR_LINE);
     }
 }

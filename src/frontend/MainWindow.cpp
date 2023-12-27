@@ -176,7 +176,7 @@ void MainWindow::paintEvent(QPaintEvent *event) {
     this->ui->code_browser->setText(QString::fromStdString(code_str));
 }
 
-void MainWindow::workerFinish(QString output, QString error) {
+void MainWindow::workerFinish(QString output, QString error, QString ast_out) {
     qDebug() << "[main] worker finished";
     if (output.isEmpty()) {
         output = "No output.";
@@ -186,6 +186,8 @@ void MainWindow::workerFinish(QString output, QString error) {
     }
     auto result = QString{"Output:\n%1\n\nError:\n%2"}.arg(output).arg(error);
     this->ui->result_browser->setText(result);
+    this->ui->ast_browser->setText(ast_out);
+
     is_runnning = false;
 }
 

@@ -176,8 +176,15 @@ void MainWindow::paintEvent(QPaintEvent *event) {
     this->ui->code_browser->setText(QString::fromStdString(code_str));
 }
 
-void MainWindow::workerFinish(QString result) {
+void MainWindow::workerFinish(QString output, QString error) {
     qDebug() << "[main] worker finished";
+    if (output.isEmpty()) {
+        output = "No output.";
+    }
+    if (error.isEmpty()) {
+        error = "Everything is safe and sound.";
+    }
+    auto result = QString{"Output:\n%1\n\nError:\n%2"}.arg(output).arg(error);
     this->ui->result_browser->setText(result);
     is_runnning = false;
 }

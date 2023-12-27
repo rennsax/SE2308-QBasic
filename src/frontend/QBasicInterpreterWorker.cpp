@@ -34,7 +34,8 @@ void QBInterpreterWorker::doWork() {
 
     interpreter.interpret();
 
-    emit resultReady(QString::fromStdString(out.str()));
+    emit resultReady(QString::fromStdString(out.str()),
+                     QString::fromStdString(err.str()));
     this->deleteLater();
 }
 

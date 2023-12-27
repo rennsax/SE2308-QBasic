@@ -28,7 +28,7 @@ protected:
 
 public slots:
     // Respond to the finish of the worker. Update UI and clean some states.
-    void workerFinish(QString result);
+    void workerFinish(QString output, QString error);
 
 signals:
     void sendInput(QString input);

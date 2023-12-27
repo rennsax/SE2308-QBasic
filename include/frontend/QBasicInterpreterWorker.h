@@ -26,7 +26,7 @@ public slots:
     void doWork();
 
 signals:
-    void resultReady(QString result);
+    void resultReady(QString output, QString error);
     void requestInput();
 
 private:

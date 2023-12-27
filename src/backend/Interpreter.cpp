@@ -318,6 +318,19 @@ class CustomErrorListener : public BaseErrorListener {
 public:
     LSize last_err_line = 0;
 };
+
+class ThrowExceptionStrategy : public DefaultErrorStrategy {
+
+public:
+    void recover(Parser *recognizer, std::exception_ptr e) override {
+        throw NoViableAltException{recognizer};
+    }
+
+    Token *recoverInline(Parser *recognizer) override {
+        throw NoViableAltException{recognizer};
+    }
+};
+
 } // namespace
 
 namespace basic {
@@ -332,6 +345,13 @@ Interpreter::Interpreter(std::shared_ptr<Fragment> frag, std::ostream &out,
 }
 
 Interpreter::Interpreter(std::shared_ptr<Fragment> frag, std::ostream &out,
+                         std::ostream &err)
+    : Interpreter(std::move(frag), out, err, []() -> std::string {
+          return "10";
+      }) {
+}
+
+Interpreter::Interpreter(std::shared_ptr<Fragment> frag, std::ostream &out,
                          std::ostream &err,
                          std::function<std::string()> input_action)
     : frag(std::move(frag)), out(out), err(err),
@@ -339,28 +359,33 @@ Interpreter::Interpreter(std::shared_ptr<Fragment> frag, std::ostream &out,
 }
 
 void Interpreter::interpret() {
-    auto code_stream = frag->get_frag_stream();
 
-    // Lexer, get tokens
-    ANTLRInputStream input(code_stream);
-    BasicLexer lexer(&input);
-    CommonTokenStream tokens(&lexer);
+    bool already_done = false;
+    while (!already_done) {
+        auto code_stream = frag->get_frag_stream();
+        ANTLRInputStream input(code_stream);
 
-    // Parser, get AST
-    BasicParser parser(&tokens);
-    parser.setErrorHandler(std::make_shared<BailErrorStrategy>());
-    parser.removeErrorListeners();
-    CustomErrorListener my_lister{};
-    parser.addErrorListener(&my_lister);
+        // Lexer, get tokens
+        BasicLexer lexer(&input);
+        CommonTokenStream tokens(&lexer);
+        tokens.fill();
 
-    while (1) {
+        // Configure a parse
+        BasicParser parser(&tokens);
+        parser.setErrorHandler(std::make_shared<ThrowExceptionStrategy>());
+        parser.removeErrorListeners();
+        CustomErrorListener my_lister{};
+        parser.addErrorListener(&my_lister);
+
         try {
+            // Parser, get AST
             tree::ParseTree *tree = parser.prog();
             // Visitor, interpret
             InterpretVisitor visitor{out, err, input_action};
             visitor.visit(tree);
-            break;
-        } catch (const std::exception &e) {
+            already_done = true;
+
+        } catch (const RecognitionException &e) {
             auto maybe_line_num =
                 this->frag->get_line_number_at(my_lister.last_err_line);
             assert(maybe_line_num.has_value());
@@ -368,6 +393,8 @@ void Interpreter::interpret() {
             LSize line_num = maybe_line_num.value();
             this->frag->remove(line_num);
             this->frag->insert(line_num, "___ERROR___");
+        } catch (const std::exception &e) {
+            assert(0);
         }
     }
 }

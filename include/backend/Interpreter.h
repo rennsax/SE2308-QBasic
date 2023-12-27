@@ -28,6 +28,13 @@ public:
     Interpreter(std::shared_ptr<Fragment> frag, std::ostream &out,
                 std::ostream &err, std::istream &is);
 
+    /**
+     * @b A convenient overload. The input is dummy, which always produces "10".
+     *
+     */
+    Interpreter(std::shared_ptr<Fragment> frag, std::ostream &out,
+                std::ostream &err);
+
     ~Interpreter() = default;
 
     // No copy or move.

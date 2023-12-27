@@ -234,3 +234,19 @@ TEST_CASE("show AST") {
 
     CHECK(inter.show_ast() == ast_ss.str());
 }
+
+TEST_CASE("syntactic error") {
+    auto frag = std::make_shared<Fragment>();
+    std::ostringstream out{};
+    std::ostringstream err{};
+    Interpreter inter{frag, out, err};
+
+    frag->append("INPUTx");
+    frag->append("INPUT 2222abcd");
+    frag->append("Hello world");
+    inter.interpret();
+
+    for (std::size_t i = 0; i < frag->size(); ++i) {
+        CHECK(frag->get_line(100 + 10 * i).value_or("") == "___ERROR___");
+    }
+}

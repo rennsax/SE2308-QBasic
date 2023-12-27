@@ -3,7 +3,6 @@
 #include <BasicANTLR.h>
 
 #include <cassert>
-#include <type_traits>
 #include <unordered_map>
 
 using namespace antlr_basic;
@@ -15,7 +14,6 @@ class InterpretVisitor : public BasicBaseVisitor {
 
     /// Value type in Basic
     using VarType = std::int32_t;
-    using ExprFallback = std::integral_constant<VarType, 0>;
 
 public:
     explicit InterpretVisitor(
@@ -129,24 +127,21 @@ public:
 
     std::any visitPrintStm(BasicParser::PrintStmContext *ctx) override {
         auto val = parseExpr(ctx->expr());
-        if (has_error) {
+        if (!val.has_value()) {
             return {};
         }
-        out << val << '\n';
+        out << val.value() << '\n';
         return {};
     }
 
     std::any visitInputStm(BasicParser::InputStmContext *ctx) override {
         auto id = parseId(ctx->ID());
 
-        VarType val{};
         std::string input_str = input_action_ref();
         if (input_str.empty()) {
             runtime_error("empty input");
-            var_env[id] = ExprFallback::value;
         } else if (!all_of(begin(input_str), end(input_str), ::isdigit)) {
             runtime_error("invalid input: " + input_str);
-            var_env[id] = ExprFallback::value;
         } else {
             var_env[id] = std::stoi(input_str);
         }
@@ -155,36 +150,50 @@ public:
 
     std::any visitLetStm(BasicParser::LetStmContext *ctx) override {
         auto val = parseExpr(ctx->expr());
+        if (!val.has_value()) {
+            return {};
+        }
         auto id = parseId(ctx->ID());
-        var_env[id] = val;
+        var_env[id] = val.value();
         return {};
     }
 
     std::any visitPowerExpr(BasicParser::PowerExprContext *ctx) override {
-        auto base = parseExpr(ctx->expr(0));
-        auto exponent = parseExpr(ctx->expr(1));
+        auto maybe_base = parseExpr(ctx->expr(0));
+        auto maybe_exponent = parseExpr(ctx->expr(1));
+
+        if (!(maybe_exponent.has_value() && maybe_base.has_value())) {
+            return {};
+        }
+
+        auto base = maybe_base.value();
+        auto exponent = maybe_exponent.value();
 
         if (exponent < 0) {
             auto wrong_token = ctx->expr(1)->getStart();
             std::stringstream err_ss{};
             err_ss << "Unsupported negative exponent: " << exponent;
             static_error(wrong_token, err_ss.str());
-            return ExprFallback::value;
+            return {};
         }
 
         return quickPower(base, exponent);
     }
 
     std::any visitDivExpr(BasicParser::DivExprContext *ctx) override {
-        auto dividend = parseExpr(ctx->expr(0));
-        auto divisor = parseExpr(ctx->expr(1));
-
+        auto maybe_dividend = parseExpr(ctx->expr(0));
+        auto maybe_divisor = parseExpr(ctx->expr(1));
+        if (!(maybe_dividend.has_value() && maybe_divisor.has_value())) {
+            return {};
+        }
+        auto dividend = maybe_dividend.value();
+        auto divisor = maybe_divisor.value();
         if (divisor == 0) {
             auto wrong_token = ctx->expr(1)->getStart();
             std::stringstream err_ss{};
             err_ss << "Division by zero: " << dividend << " / " << divisor;
             static_error(wrong_token, err_ss.str());
-            return ExprFallback::value;
+            return {};
         }
 
         return dividend / divisor;
@@ -194,14 +203,33 @@ public:
         auto left_operand = parseExpr(ctx->expr(0));
         auto right_operand = parseExpr(ctx->expr(1));
 
-        return left_operand + right_operand;
+        if (!(left_operand.has_value() && right_operand.has_value())) {
+            return {};
+        }
+
+        return left_operand.value() + right_operand.value();
+    }
+
+    std::any visitMinusExpr(BasicParser::MinusExprContext *ctx) override {
+        auto left_operand = parseExpr(ctx->expr(0));
+        auto right_operand = parseExpr(ctx->expr(1));
+
+        if (!(left_operand.has_value() && right_operand.has_value())) {
+            return {};
+        }
+
+        return left_operand.value() - right_operand.value();
     }
 
     std::any visitMultExpr(BasicParser::MultExprContext *ctx) override {
         auto left_operand = parseExpr(ctx->expr(0));
         auto right_operand = parseExpr(ctx->expr(1));
 
-        return left_operand * right_operand;
+        if (!(left_operand.has_value() && right_operand.has_value())) {
+            return {};
+        }
+
+        return left_operand.value() * right_operand.value();
     }
 
     std::any visitIntExpr(BasicParser::IntExprContext *ctx) override {
@@ -216,27 +244,37 @@ public:
             std::stringstream err_ss{};
             err_ss << "Undefined variable: " << var_name;
             static_error(wrong_token, err_ss.str());
-            return ExprFallback::value;
+            return {};
         } else {
             return it->second;
         }
     }
 
     std::any visitNegExpr(BasicParser::NegExprContext *ctx) override {
-        VarType val = parseExpr(ctx->expr());
-        return -val;
+        auto val = parseExpr(ctx->expr());
+        if (!val.has_value()) {
+            return {};
+        }
+        return -val.value();
     }
 
     std::any visitModExpr(BasicParser::ModExprContext *ctx) override {
-        auto dividend = parseExpr(ctx->expr(0));
-        auto modulus = parseExpr(ctx->expr(1));
+        auto maybe_dividend = parseExpr(ctx->expr(0));
+        auto maybe_modulus = parseExpr(ctx->expr(1));
+
+        if (!(maybe_dividend.has_value() && maybe_modulus.has_value())) {
+            return {};
+        }
+
+        auto dividend = maybe_dividend.value();
+        auto modulus = maybe_modulus.value();
 
         if (modulus == 0) {
             auto wrong_token = ctx->expr(1)->getStart();
             std::stringstream err_ss{};
             err_ss << "Modulus by zero: " << dividend << " MOD " << modulus;
             static_error(wrong_token, err_ss.str());
-            return ExprFallback::value;
+            return {};
         }
 
         return dividend % modulus;
@@ -244,13 +282,6 @@ public:
 
     std::any visitParenExpr(BasicParser::ParenExprContext *ctx) override {
         return parseExpr(ctx->expr());
-    }
-
-    std::any visitMinusExpr(BasicParser::MinusExprContext *ctx) override {
-        auto left_operand = parseExpr(ctx->expr(0));
-        auto right_operand = parseExpr(ctx->expr(1));
-
-        return left_operand - right_operand;
     }
 
 private:
@@ -269,8 +300,13 @@ private:
      * @param ctx
      * @return VarType
      */
-    VarType parseExpr(BasicParser::ExprContext *ctx) noexcept {
-        return std::any_cast<VarType>(visit(ctx));
+    std::optional<VarType> parseExpr(BasicParser::ExprContext *ctx) noexcept {
+        auto val = visit(ctx);
+        if (val.has_value()) {
+            return std::any_cast<VarType>(visit(ctx));
+        } else {
+            return {};
+        }
     }
 
     /**

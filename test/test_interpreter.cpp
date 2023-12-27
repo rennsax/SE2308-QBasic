@@ -119,6 +119,40 @@ TEST_CASE("input variable") {
     CHECK(input_times == 1);
 }
 
+TEST_CASE("input error") {
+    auto frag = std::make_shared<Fragment>();
+    std::ostringstream out{};
+    std::ostringstream err{};
+    std::string input_str{};
+    Interpreter inter{frag, out, err, [&]() {
+                          return input_str;
+                      }};
+
+    SUBCASE("empty input") {
+        input_str.clear();
+        REQUIRE(input_str == "");
+
+        frag->append("INPUT x");
+        inter.interpret();
+
+        CHECK(out.str() == "");
+        CHECK(err.str() == "runtime error: empty input\n");
+    }
+
+    SUBCASE("invalid input") {
+        // Cannot extract to number
+        input_str = "abcd";
+
+        frag->append("INPUT x");
+        frag->append("PRINT x");
+        inter.interpret();
+
+        CHECK(out.str() == "");
+        CHECK(err.str() == "runtime error: invalid input: abcd\n"
+                           "line 2:11 Undefined variable: x\n");
+    }
+}
+
 TEST_CASE("comments are lines") {
     auto frag = std::make_shared<Fragment>();
     std::ostringstream out{};
@@ -140,7 +174,7 @@ TEST_CASE("comments are lines") {
     CHECK(err.str() == "");
 }
 
-TEST_CASE("error detection") {
+TEST_CASE("semantic error") {
     auto frag = std::make_shared<Fragment>();
     std::ostringstream out{};
     std::ostringstream err{};
@@ -154,7 +188,8 @@ TEST_CASE("error detection") {
         inter.interpret();
 
         CHECK(out.str() == "");
-        CHECK(err.str() == "line 1:18 Unsupported negative exponent: -3\n");
+        CHECK(err.str() == "line 1:18 Unsupported negative exponent: -3\n"
+                           "line 2:11 Undefined variable: x\n");
     }
 
     SUBCASE("undefined variable") {
@@ -168,7 +203,6 @@ TEST_CASE("error detection") {
 
     SUBCASE("divided by zero") {
         frag->append("LET x = -2 / -0");
-        frag->append("PRINT x");
 
         inter.interpret();
 
@@ -178,7 +212,6 @@ TEST_CASE("error detection") {
 
     SUBCASE("modulo by zero") {
         frag->append("LET x = -2 MOD 0");
-        frag->append("PRINT x");
 
         inter.interpret();
 

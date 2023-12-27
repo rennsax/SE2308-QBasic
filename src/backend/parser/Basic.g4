@@ -58,12 +58,16 @@ stm:
 
 empty_stm: NL;
 
-let_stm: LET ID EQUAL expr # LetStm;
+let_stm
+	returns[int exec_times=0]: LET ID EQUAL expr # LetStm;
 print_stm: PRINT expr # PrintStm;
 input_stm: INPUT ID # InputStm;
-goto_stm: GOTO INT # GotoStm;
+goto_stm
+	returns[int exec_times=0]: GOTO INT # GotoStm;
 cmp_op: EQUAL | LT | GT;
-if_stm: IF expr cmp_op expr THEN INT # IfStm;
+if_stm
+	returns[int true_times=0, int false_times=0]:
+	IF expr cmp_op expr THEN INT # IfStm;
 end_stm: END # EndStm;
 error_stm: ERROR # ErrStm;
 

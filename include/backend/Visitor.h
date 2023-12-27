@@ -11,6 +11,34 @@ using namespace basic;
 using namespace antlr4;
 using namespace antlr_basic;
 
+struct VariableEnv {
+    /// Value and ref time.
+    using EnvInformation = std::pair<VarType, int>;
+
+    std::optional<VarType> lookup(const std::string &var_name) noexcept {
+        if (!exist(var_name)) {
+            return std::nullopt;
+        }
+        auto &var = var_env.at(var_name);
+        var.second++;
+        return var.first;
+    };
+
+    bool exist(const std::string &var_name) const noexcept {
+        return var_env.find(var_name) != end(var_env);
+    }
+
+    void enter(const std::string &var_name, VarType value) noexcept {
+        if (exist(var_name)) {
+            var_env.at(var_name).first = value;
+        } else {
+            var_env.emplace(var_name, EnvInformation{value, 0});
+        }
+    }
+
+    std::unordered_map<std::string, EnvInformation> var_env;
+};
+
 class InterpretVisitor : public BasicBaseVisitor {
 
 public:
@@ -28,6 +56,10 @@ public:
 
     std::string get_ast() const noexcept {
         return ast_ss.str();
+    }
+
+    std::shared_ptr<VariableEnv> get_var_env() const noexcept {
+        return v_env;
     }
 
     /**
@@ -80,7 +112,7 @@ private:
     std::ostream &out, &err;
     std::reference_wrapper<const std::function<std::string()>> input_action_ref;
 
-    std::unordered_map<std::string, VarType> var_env;
+    std::shared_ptr<VariableEnv> v_env{std::make_unique<VariableEnv>()};
 
     /// AST-related data structure
     bool show_ast = true;

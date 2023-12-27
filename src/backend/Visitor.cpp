@@ -89,6 +89,7 @@ std::any InterpretVisitor::visitEndStm(BasicParser::EndStmContext *ctx) {
     return static_cast<LSize>(0);
 }
 std::any InterpretVisitor::visitGotoStm(BasicParser::GotoStmContext *ctx) {
+    ctx->exec_times++;
     return static_cast<LSize>(std::stoi(ctx->INT()->getText()));
 }
 std::any InterpretVisitor::visitIfStm(BasicParser::IfStmContext *ctx) {
@@ -104,7 +105,10 @@ std::any InterpretVisitor::visitIfStm(BasicParser::IfStmContext *ctx) {
     }
 
     if (cond) {
+        ctx->true_times++;
         return static_cast<LSize>(std::stoi(ctx->INT()->getText()));
+    } else {
+        ctx->false_times++;
     }
 
     return {};
@@ -126,17 +130,18 @@ std::any InterpretVisitor::visitInputStm(BasicParser::InputStmContext *ctx) {
     } else if (!all_of(begin(input_str), end(input_str), ::isdigit)) {
         runtime_error("invalid input: " + input_str);
     } else {
-        var_env[id] = std::stoi(input_str);
+        v_env->enter(id, std::stoi(input_str));
     }
     return {};
 }
 std::any InterpretVisitor::visitLetStm(BasicParser::LetStmContext *ctx) {
+    ctx->exec_times++;
     auto val = parseExpr(ctx->expr());
     if (!val.has_value()) {
         return {};
     }
     auto id = parseId(ctx->ID());
-    var_env[id] = val.value();
+    v_env->enter(id, val.value());
     return {};
 }
 std::any InterpretVisitor::visitPowerExpr(BasicParser::PowerExprContext *ctx) {
@@ -214,14 +219,15 @@ std::any InterpretVisitor::visitIntExpr(BasicParser::IntExprContext *ctx) {
 }
 std::any InterpretVisitor::visitVarExpr(BasicParser::VarExprContext *ctx) {
     auto var_name = parseId(ctx->ID());
-    if (auto it = var_env.find(var_name); it == var_env.end()) {
+    // if (auto it = var_env.find(var_name); it == var_env.end()) {
+    if (!v_env->exist(var_name)) {
         auto wrong_token = ctx->ID()->getSymbol();
         std::stringstream err_ss{};
         err_ss << "Undefined variable: " << var_name;
         static_error(wrong_token, err_ss.str());
         return {};
     } else {
-        return it->second;
+        return v_env->lookup(var_name).value();
     }
 }
 std::any InterpretVisitor::visitNegExpr(BasicParser::NegExprContext *ctx) {

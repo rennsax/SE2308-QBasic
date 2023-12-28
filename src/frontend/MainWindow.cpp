@@ -121,7 +121,10 @@ void MainWindow::load() {
     QString file_name = QFileDialog::getOpenFileName();
     std::ifstream is{file_name.toStdString()};
     if (is.is_open()) {
-        this->frag = std::make_shared<Fragment>(Fragment::read_stream(is));
+        this->frag = std::make_shared<Fragment>();
+        for (std::string line{}; std::getline(is, line);) {
+            execute(line);
+        }
         this->update();
     }
 }

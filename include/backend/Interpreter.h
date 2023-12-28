@@ -59,6 +59,8 @@ private:
     /// Standard output, error streams that are bind to the Basic
     /// interpreter.
     std::ostream &out, &err;
+    std::string ast_res{};
+    bool has_exec = false;
 
     std::function<std::string()> input_action;
 

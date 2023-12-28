@@ -1,13 +1,13 @@
 100 REM
 	... Fibonacci
 110 LET = 1
-	max 44
+	max 22
 	10000
 120 LET = 1
-	n1 170
+	n1 64
 	0
 130 LET = 1
-	n2 126
+	n2 42
 	1
 140 IF THEN 1 21
 	n1
@@ -16,15 +16,15 @@
 145 PRINT
 	n1
 150 LET = 21
-	n3 42
+	n3 21
 	+
 		n1
 		n2
 160 LET = 21
-	n1 170
+	n1 64
 	n2
 170 LET = 21
-	n2 126
+	n2 42
 	n3
 180 GOTO 21
 	140

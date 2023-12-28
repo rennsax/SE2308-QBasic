@@ -260,7 +260,7 @@ TEST_CASE("show AST") {
     Interpreter inter{frag, out, err};
 
     std::stringstream ast_ss{};
-    std::fstream ast_fs{"test_cases/fibonacci.ast", std::ios_base::in};
+    std::fstream ast_fs{"test_cases/fibonacci.ast", std::ios::in};
     REQUIRE(ast_fs.is_open());
     ast_ss << ast_fs.rdbuf();
 

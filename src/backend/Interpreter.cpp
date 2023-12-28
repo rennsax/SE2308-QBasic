@@ -85,20 +85,22 @@ void Interpreter::interpret() {
     tree::ParseTree *tree = parser.prog();
 
     // Visitor, interpret
-    basic_visitor::InterpretVisitor visitor{out, err, input_action};
-    visitor.visit(tree);
-}
-
-std::string Interpreter::show_ast() {
-    rewrite();
-    GET_BASIC_PARSER();
-    tree::ParseTree *tree = parser.prog();
-
     basic_visitor::InterpretVisitor exec_visitor{out, err, input_action};
     exec_visitor.visit(tree);
     basic_visitor::ASTConstructVisitor ast_visitor{exec_visitor.get_var_env()};
     ast_visitor.visit(tree);
-    return ast_visitor.get_ast();
+    ast_res = ast_visitor.get_ast();
+    has_exec = true;
+}
+
+std::string Interpreter::show_ast() {
+    if (has_exec) {
+        return ast_res;
+    } else {
+        interpret();
+        assert(has_exec);
+        return ast_res;
+    }
 }
 
 void Interpreter::rewrite() {

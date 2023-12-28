@@ -93,15 +93,20 @@ std::any InterpretVisitor::visitGotoStm(BasicParser::GotoStmContext *ctx) {
     return static_cast<LSize>(std::stoi(ctx->INT()->getText()));
 }
 std::any InterpretVisitor::visitIfStm(BasicParser::IfStmContext *ctx) {
-    auto left_expr = parseExpr(ctx->expr(0));
-    auto right_expr = parseExpr(ctx->expr(1));
+    auto left_expr = visit(ctx->expr(0));
+    auto right_expr = visit(ctx->expr(1));
+    if (!(left_expr.has_value() && right_expr.has_value())) {
+        return {};
+    }
+    auto left_expr_res = unwrap_val(left_expr);
+    auto right_expr_res = unwrap_val(right_expr);
     bool cond{};
     if (ctx->cmp_op()->EQUAL()) {
-        cond = left_expr == right_expr;
+        cond = left_expr_res == right_expr_res;
     } else if (ctx->cmp_op()->GT()) {
-        cond = left_expr > right_expr;
+        cond = left_expr_res > right_expr_res;
     } else if (ctx->cmp_op()->LT()) {
-        cond = left_expr < right_expr;
+        cond = left_expr_res < right_expr_res;
     }
 
     if (cond) {
@@ -114,11 +119,11 @@ std::any InterpretVisitor::visitIfStm(BasicParser::IfStmContext *ctx) {
     return {};
 }
 std::any InterpretVisitor::visitPrintStm(BasicParser::PrintStmContext *ctx) {
-    auto val = parseExpr(ctx->expr());
+    auto val = visit(ctx->expr());
     if (!val.has_value()) {
         return {};
     }
-    out << val.value() << '\n';
+    out << unwrap_val(val) << '\n';
     return {};
 }
 std::any InterpretVisitor::visitInputStm(BasicParser::InputStmContext *ctx) {
@@ -136,24 +141,24 @@ std::any InterpretVisitor::visitInputStm(BasicParser::InputStmContext *ctx) {
 }
 std::any InterpretVisitor::visitLetStm(BasicParser::LetStmContext *ctx) {
     ctx->exec_times++;
-    auto val = parseExpr(ctx->expr());
+    auto val = visit(ctx->expr());
     if (!val.has_value()) {
         return {};
     }
     auto id = parseId(ctx->ID());
-    v_env->enter(id, val.value());
+    v_env->enter(id, unwrap_val(val));
     return {};
 }
 std::any InterpretVisitor::visitPowerExpr(BasicParser::PowerExprContext *ctx) {
-    auto maybe_base = parseExpr(ctx->expr(0));
-    auto maybe_exponent = parseExpr(ctx->expr(1));
+    auto maybe_base = visit(ctx->expr(0));
+    auto maybe_exponent = visit(ctx->expr(1));
 
     if (!(maybe_exponent.has_value() && maybe_base.has_value())) {
         return {};
     }
 
-    auto base = maybe_base.value();
-    auto exponent = maybe_exponent.value();
+    auto base = unwrap_val(maybe_base);
+    auto exponent = unwrap_val(maybe_exponent);
 
     if (exponent < 0) {
         auto wrong_token = ctx->expr(1)->getStart();
@@ -166,13 +171,13 @@ std::any InterpretVisitor::visitPowerExpr(BasicParser::PowerExprContext *ctx) {
     return quickPower(base, exponent);
 }
 std::any InterpretVisitor::visitDivExpr(BasicParser::DivExprContext *ctx) {
-    auto maybe_dividend = parseExpr(ctx->expr(0));
-    auto maybe_divisor = parseExpr(ctx->expr(1));
+    auto maybe_dividend = visit(ctx->expr(0));
+    auto maybe_divisor = visit(ctx->expr(1));
     if (!(maybe_dividend.has_value() && maybe_divisor.has_value())) {
         return {};
     }
-    auto dividend = maybe_dividend.value();
-    auto divisor = maybe_divisor.value();
+    auto dividend = unwrap_val(maybe_dividend);
+    auto divisor = unwrap_val(maybe_divisor);
     if (divisor == 0) {
         auto wrong_token = ctx->expr(1)->getStart();
         std::stringstream err_ss{};
@@ -184,34 +189,34 @@ std::any InterpretVisitor::visitDivExpr(BasicParser::DivExprContext *ctx) {
     return dividend / divisor;
 }
 std::any InterpretVisitor::visitPlusExpr(BasicParser::PlusExprContext *ctx) {
-    auto left_operand = parseExpr(ctx->expr(0));
-    auto right_operand = parseExpr(ctx->expr(1));
+    auto left_operand = visit(ctx->expr(0));
+    auto right_operand = visit(ctx->expr(1));
 
     if (!(left_operand.has_value() && right_operand.has_value())) {
         return {};
     }
 
-    return left_operand.value() + right_operand.value();
+    return unwrap_val(left_operand) + unwrap_val(right_operand);
 }
 std::any InterpretVisitor::visitMinusExpr(BasicParser::MinusExprContext *ctx) {
-    auto left_operand = parseExpr(ctx->expr(0));
-    auto right_operand = parseExpr(ctx->expr(1));
+    auto left_operand = visit(ctx->expr(0));
+    auto right_operand = visit(ctx->expr(1));
 
     if (!(left_operand.has_value() && right_operand.has_value())) {
         return {};
     }
 
-    return left_operand.value() - right_operand.value();
+    return unwrap_val(left_operand) - unwrap_val(right_operand);
 }
 std::any InterpretVisitor::visitMultExpr(BasicParser::MultExprContext *ctx) {
-    auto left_operand = parseExpr(ctx->expr(0));
-    auto right_operand = parseExpr(ctx->expr(1));
+    auto left_operand = visit(ctx->expr(0));
+    auto right_operand = visit(ctx->expr(1));
 
     if (!(left_operand.has_value() && right_operand.has_value())) {
         return {};
     }
 
-    return left_operand.value() * right_operand.value();
+    return unwrap_val(left_operand) * unwrap_val(right_operand);
 }
 std::any InterpretVisitor::visitIntExpr(BasicParser::IntExprContext *ctx) {
     auto int_str = ctx->INT()->getText();
@@ -231,22 +236,22 @@ std::any InterpretVisitor::visitVarExpr(BasicParser::VarExprContext *ctx) {
     }
 }
 std::any InterpretVisitor::visitNegExpr(BasicParser::NegExprContext *ctx) {
-    auto val = parseExpr(ctx->expr());
+    auto val = visit(ctx->expr());
     if (!val.has_value()) {
         return {};
     }
-    return -val.value();
+    return -unwrap_val(val);
 }
 std::any InterpretVisitor::visitModExpr(BasicParser::ModExprContext *ctx) {
-    auto maybe_dividend = parseExpr(ctx->expr(0));
-    auto maybe_modulus = parseExpr(ctx->expr(1));
+    auto maybe_dividend = visit(ctx->expr(0));
+    auto maybe_modulus = visit(ctx->expr(1));
 
     if (!(maybe_dividend.has_value() && maybe_modulus.has_value())) {
         return {};
     }
 
-    auto dividend = maybe_dividend.value();
-    auto modulus = maybe_modulus.value();
+    auto dividend = unwrap_val(maybe_dividend);
+    auto modulus = unwrap_val(maybe_modulus);
 
     if (modulus == 0) {
         auto wrong_token = ctx->expr(1)->getStart();
@@ -259,16 +264,10 @@ std::any InterpretVisitor::visitModExpr(BasicParser::ModExprContext *ctx) {
     return dividend % modulus;
 }
 std::any InterpretVisitor::visitParenExpr(BasicParser::ParenExprContext *ctx) {
-    return parseExpr(ctx->expr());
+    return visit(ctx->expr());
 }
-std::optional<VarType> InterpretVisitor::parseExpr(
-    BasicParser::ExprContext *ctx) noexcept {
-    auto val = visit(ctx);
-    if (val.has_value()) {
-        return std::any_cast<VarType>(visit(ctx));
-    } else {
-        return {};
-    }
+VarType InterpretVisitor::unwrap_val(std::any val) noexcept {
+    return std::any_cast<VarType>(val);
 }
 std::string InterpretVisitor::parseId(tree::TerminalNode *node) noexcept {
     return node->getText();

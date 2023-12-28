@@ -117,15 +117,8 @@ private:
 
     std::shared_ptr<VariableEnv> v_env{std::make_unique<VariableEnv>()};
 
-    /**
-     * @brief Just a wrapper for #visit, which convert the result to
-     * #ValType.
-     *
-     * @param ctx
-     * @return VarType
-     */
-    std::optional<VarType> parseExpr(BasicParser::ExprContext *ctx) noexcept;
-
+    VarType unwrap_val(std::any val) noexcept;
+        
     /**
      * @brief Retrieve the Id from the lexer node.
      *

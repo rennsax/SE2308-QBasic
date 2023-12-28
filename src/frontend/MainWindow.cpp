@@ -47,7 +47,7 @@ void MainWindow::execute(std::string_view command) {
         } else {
             this->frag->insert(line_number, arg);
         }
-        this->update();
+        syncCodeFrag();
         return;
     }
 
@@ -125,7 +125,7 @@ void MainWindow::load() {
         for (std::string line{}; std::getline(is, line);) {
             execute(line);
         }
-        this->update();
+        syncCodeFrag();
     }
 }
 
@@ -139,7 +139,7 @@ void MainWindow::clear() {
     this->ui->result_browser->clear();
     this->ui->ast_browser->clear();
     this->ui->code_browser->clear();
-    this->update();
+    syncCodeFrag();
 }
 
 void MainWindow::help() {
@@ -149,6 +149,12 @@ void MainWindow::help() {
 
 void MainWindow::quit() {
     QApplication::quit();
+}
+
+void MainWindow::syncCodeFrag() {
+    auto code_str = this->frag->render();
+
+    this->ui->code_browser->setText(QString::fromStdString(code_str));
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
@@ -174,9 +180,6 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 }
 
 void MainWindow::paintEvent(QPaintEvent *event) {
-    auto code_str = this->frag->render();
-
-    this->ui->code_browser->setText(QString::fromStdString(code_str));
 }
 
 void MainWindow::workerFinish(QString output, QString error, QString ast_out) {

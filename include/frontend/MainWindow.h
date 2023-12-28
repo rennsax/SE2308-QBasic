@@ -55,6 +55,7 @@ private:
     void clear();
     void help();
     void quit();
+    void syncCodeFrag();
 };
 } // namespace basic
 

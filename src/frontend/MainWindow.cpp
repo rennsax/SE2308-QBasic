@@ -16,12 +16,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     this->ui->setupUi(this);
 
-    connect(this->ui->btn_run, &QPushButton::clicked,
-            std::bind(&MainWindow::run, this));
-    connect(this->ui->btn_load, &QPushButton::clicked,
-            std::bind(&MainWindow::load, this));
-    connect(this->ui->btn_clear, &QPushButton::clicked,
-            std::bind(&MainWindow::clear, this));
+    connect(this->ui->btn_run, &QPushButton::clicked, this, &MainWindow::run);
+    connect(this->ui->btn_load, &QPushButton::clicked, this, &MainWindow::load);
+    connect(this->ui->btn_clear, &QPushButton::clicked, this,
+            &MainWindow::clear);
 
     // Focus the cursor to the command line input.
     this->ui->input->setFocus();

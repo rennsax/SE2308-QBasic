@@ -36,6 +36,7 @@ signals:
 private:
     Ui::Window *ui;
     std::shared_ptr<Fragment> frag{};
+    std::shared_ptr<Fragment> frag_mini{};
     bool is_runnning{false};
     bool is_inputting{false};
 
@@ -48,7 +49,13 @@ private:
         QUIT,
         UNKNOWN,
     };
+    enum class MiniBasicCmd {
+        INPUT,
+        PRINT,
+        LET,
+    };
     CommandType getCommandType(std::string_view command);
+    std::optional<MiniBasicCmd> getMiniBasicCmd(std::string_view command);
     void run();
     void load();
     void list();
@@ -56,6 +63,8 @@ private:
     void help();
     void quit();
     void syncCodeFrag();
+
+    void doRun(std::shared_ptr<Fragment> frag);
 };
 } // namespace basic
 

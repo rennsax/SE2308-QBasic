@@ -11,8 +11,8 @@
 namespace basic {
 
 MainWindow::MainWindow(QWidget *parent)
-    : QWidget{parent}, ui{new Ui::Window{}},
-      frag{std::make_shared<Fragment>()} {
+    : QWidget{parent}, ui{new Ui::Window{}}, frag{std::make_shared<Fragment>()},
+      frag_mini{std::make_shared<Fragment>()} {
 
     this->ui->setupUi(this);
 
@@ -47,6 +47,15 @@ void MainWindow::execute(std::string_view command) {
             this->frag->insert(line_number, arg);
         }
         syncCodeFrag();
+        return;
+    }
+
+    auto maybe_mini_cmd = getMiniBasicCmd(cmd);
+
+    if (maybe_mini_cmd.has_value()) {
+        auto mini_cmd = maybe_mini_cmd.value();
+        frag_mini->append(std::string{command});
+        doRun(frag_mini);
         return;
     }
 
@@ -93,7 +102,24 @@ auto MainWindow::getCommandType(std::string_view command) -> CommandType {
     return CommandType::UNKNOWN;
 }
 
+auto MainWindow::getMiniBasicCmd(std::string_view command)
+    -> std::optional<MiniBasicCmd> {
+    if (command == "INPUT") {
+        return MiniBasicCmd::INPUT;
+    } else if (command == "PRINT") {
+        return MiniBasicCmd::PRINT;
+    } else if (command == "LET") {
+        return MiniBasicCmd::LET;
+    } else {
+        return std::nullopt;
+    }
+}
+
 void MainWindow::run() {
+    doRun(this->frag);
+}
+
+void MainWindow::doRun(std::shared_ptr<Fragment> frag) {
     QThread *thread = new QThread{};
     QBInterpreterWorker *worker = new QBInterpreterWorker{frag, this};
     worker->moveToThread(thread);
@@ -135,6 +161,7 @@ void MainWindow::list() {
 
 void MainWindow::clear() {
     this->frag = std::make_shared<Fragment>();
+    this->frag_mini = std::make_shared<Fragment>();
     this->ui->result_browser->clear();
     this->ui->ast_browser->clear();
     this->ui->code_browser->clear();

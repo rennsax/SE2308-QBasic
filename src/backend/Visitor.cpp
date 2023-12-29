@@ -224,7 +224,6 @@ std::any InterpretVisitor::visitIntExpr(BasicParser::IntExprContext *ctx) {
 }
 std::any InterpretVisitor::visitVarExpr(BasicParser::VarExprContext *ctx) {
     auto var_name = parseId(ctx->ID());
-    // if (auto it = var_env.find(var_name); it == var_env.end()) {
     if (!v_env->exist(var_name)) {
         auto wrong_token = ctx->ID()->getSymbol();
         std::stringstream err_ss{};

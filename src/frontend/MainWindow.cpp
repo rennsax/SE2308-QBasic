@@ -45,6 +45,7 @@ void MainWindow::execute(std::string_view command) {
         if (arg.empty()) {
             this->frag->remove(line_number);
         } else {
+            this->frag->remove(line_number);
             this->frag->insert(line_number, arg);
         }
         syncCodeFrag();

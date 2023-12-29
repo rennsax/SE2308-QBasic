@@ -40,12 +40,16 @@ TEST_CASE("expression") {
     SUBCASE("modulo") {
         frag->append("LET x = 2 MOD 3");
         frag->append("LET y = 100 MOD -3");
+        frag->append("LET z = -10 MOD -3");
+        frag->append("LET w = -1000 MOD 3");
         frag->append("PRINT x");
         frag->append("PRINT y");
+        frag->append("PRINT z");
+        frag->append("PRINT w");
 
         inter.interpret();
 
-        CHECK(out.str() == "2\n1\n");
+        CHECK(out.str() == "2\n-2\n-1\n2\n");
         CHECK(err.str() == "");
     }
 }

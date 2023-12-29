@@ -244,24 +244,28 @@ std::any InterpretVisitor::visitNegExpr(BasicParser::NegExprContext *ctx) {
 }
 std::any InterpretVisitor::visitModExpr(BasicParser::ModExprContext *ctx) {
     auto maybe_dividend = visit(ctx->expr(0));
-    auto maybe_modulus = visit(ctx->expr(1));
+    auto maybe_quotient = visit(ctx->expr(1));
 
-    if (!(maybe_dividend.has_value() && maybe_modulus.has_value())) {
+    if (!(maybe_dividend.has_value() && maybe_quotient.has_value())) {
         return {};
     }
 
     auto dividend = unwrap_val(maybe_dividend);
-    auto modulus = unwrap_val(maybe_modulus);
+    auto quotient = unwrap_val(maybe_quotient);
 
-    if (modulus == 0) {
+    if (quotient == 0) {
         auto wrong_token = ctx->expr(1)->getStart();
         std::stringstream err_ss{};
-        err_ss << "Modulus by zero: " << dividend << " MOD " << modulus;
+        err_ss << "Modulus by zero: " << dividend << " MOD " << quotient;
         static_error(wrong_token, err_ss.str());
         return {};
     }
 
-    return dividend % modulus;
+    if (quotient * dividend < 0) {
+        dividend -= (dividend / quotient - 1) * quotient;
+    }
+
+    return dividend % quotient;
 }
 std::any InterpretVisitor::visitParenExpr(BasicParser::ParenExprContext *ctx) {
     return visit(ctx->expr());

@@ -4,7 +4,12 @@
 #include "Fragment.h"
 
 #include <QObject>
+#include <atomic>
 #include <memory>
+
+QT_BEGIN_NAMESPACE
+class QEventLoop;
+QT_END_NAMESPACE
 
 namespace basic {
 
@@ -24,6 +29,8 @@ public:
 
 public slots:
     void doWork();
+private slots:
+    void receiveInput(QString input);
 
 signals:
     void resultReady(QString output, QString error, QString ast_out);
@@ -32,6 +39,8 @@ signals:
 private:
     std::shared_ptr<Fragment> frag;
     QWidget *input_sender;
+    std::string input_str{};
+    QEventLoop *loop{};
 };
 
 } // namespace basic

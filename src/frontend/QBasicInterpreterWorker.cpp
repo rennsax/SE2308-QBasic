@@ -12,20 +12,11 @@ void QBInterpreterWorker::doWork() {
     std::stringstream err{};
 
     auto input_action = [this]() -> std::string {
-        QEventLoop loop{};
-        std::string input_str{};
-
-        connect(dynamic_cast<MainWindow *>(input_sender),
-                &MainWindow::sendInput, &loop, &QEventLoop::quit);
-        connect(dynamic_cast<MainWindow *>(input_sender),
-                &MainWindow::sendInput, [&input_str](QString input) {
-                    input_str = input.toStdString();
-                });
         emit requestInput();
 
         // Start a local event loop to wait for the input.
         qDebug() << "[worker] waiting for input...";
-        loop.exec();
+        loop->exec();
 
         return input_str;
     };
@@ -40,8 +31,17 @@ void QBInterpreterWorker::doWork() {
     this->deleteLater();
 }
 
+void QBInterpreterWorker::receiveInput(QString input) {
+    qDebug() << "[worker] receive input";
+    input_str = input.toStdString();
+    loop->quit();
+}
+
 QBInterpreterWorker::QBInterpreterWorker(const std::shared_ptr<Fragment> &frag,
                                          QWidget *input_sender)
-    : frag(frag), input_sender(input_sender) {
+    : frag(frag), input_sender(input_sender), loop(new QEventLoop(this)) {
+
+    connect(dynamic_cast<MainWindow *>(input_sender), &MainWindow::sendInput,
+            this, &QBInterpreterWorker::receiveInput);
 }
 } // namespace basic

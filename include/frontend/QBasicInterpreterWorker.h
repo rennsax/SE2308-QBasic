@@ -4,7 +4,6 @@
 #include "Fragment.h"
 
 #include <QObject>
-#include <atomic>
 #include <memory>
 
 QT_BEGIN_NAMESPACE
